@@ -215,29 +215,37 @@ button { color: inherit; }
 .section--stories { color: #f4eee4; background: #302b27; }
 .section-heading--light .eyeline { color: #d79180; }
 .section-heading--light > p { color: #c6bbaf; }
-.story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 960px; }
-.story-panel { position: relative; aspect-ratio: 16 / 9; min-height: 0; overflow: hidden; border-radius: 14px; }
+.story-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; max-width: 960px; }
+.story-panel { position: relative; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px; }
 .story-panel img { height: 100%; object-fit: cover; transition: transform 650ms ease; }
 .story-panel:hover img { transform: scale(1.035); }
 .story-panel__content {
   position: absolute;
-  inset: auto 28px 28px;
+  inset: auto clamp(18px, 3vw, 28px) clamp(18px, 3vw, 28px);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
 }
-.story-panel__content strong { font-family: var(--serif); font-size: clamp(2.1rem, 4vw, 3.8rem); }
-.story-panel__content span { display: flex; align-items: center; gap: 8px; }
+.story-panel__content strong {
+  font-family: var(--serif);
+  font-size: clamp(1.85rem, 4vw, 3.8rem);
+  overflow-wrap: anywhere;
+}
+.story-panel__content span { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .copyright-notice { max-width: 930px; margin: 28px 0 0; color: #c6bbaf; font-size: 0.78rem; line-height: 1.8; }
 .home-music-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
   gap: 28px;
-  align-items: stretch;
+  align-items: start;
 }
 .music-topic-panel {
   position: relative;
   display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 14px;
@@ -249,6 +257,7 @@ button { color: inherit; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
   padding: clamp(28px, 4vw, 46px);
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -478,7 +487,7 @@ button { color: inherit; }
   .hero-feature { aspect-ratio: 16 / 11; }
   .featured-grid { grid-template-columns: 1fr 1fr; }
   .featured-grid .work-card--feature { grid-column: 1 / -1; }
-  .home-music-grid { grid-template-columns: 1fr; }
+  .story-grid, .home-music-grid { grid-template-columns: 1fr; }
   .music-columns, .notes-layout { grid-template-columns: 1fr; gap: 56px; }
   .music-columns > div:first-child,
   .music-columns > div:last-child { grid-column: auto; }
@@ -486,7 +495,6 @@ button { color: inherit; }
   .learning-hero__symbol { justify-items: start; }
   .learning-resource { grid-template-columns: 120px minmax(0,1fr) 90px; }
   .learning-resource__action { display: none; }
-  .story-panel { min-height: 380px; }
   .music-directory-grid { grid-template-columns: 1fr 1fr; }
 }
 
