@@ -215,7 +215,7 @@ button { color: inherit; }
 .section--stories { color: #f4eee4; background: #302b27; }
 .section-heading--light .eyeline { color: #d79180; }
 .section-heading--light > p { color: #c6bbaf; }
-.story-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; max-width: 960px; }
+.story-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; width: 100%; }
 .story-panel { position: relative; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px; }
 .story-panel img { height: 100%; object-fit: cover; transition: transform 650ms ease; }
 .story-panel:hover img { transform: scale(1.035); }

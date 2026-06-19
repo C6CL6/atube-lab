@@ -35,6 +35,10 @@ Set `min-width: 0` on `.story-panel`, `.music-topic-panel`, and `.favorite-music
 
 Change `.story-grid` to `repeat(2, minmax(0, 1fr))` and `.home-music-grid` to two `minmax(0, ...)` tracks without a fixed 320px minimum.
 
+- [x] **Step 2b: Remove the story grid width ceiling**
+
+Replace the fixed `max-width: 960px` with `width: 100%`, so both story images continue scaling with the page shell on wider browsers.
+
 - [x] **Step 2a: Prevent aspect-ratio expansion across columns**
 
 Top-align the music grid and constrain `.music-topic-panel` to `width: 100%` and `max-width: 100%`, so the right text panel cannot stretch the image card and make it overflow its column.
