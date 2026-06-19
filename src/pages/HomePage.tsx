@@ -1,4 +1,4 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, ExternalLink, Play } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PlayerModal } from "../components/PlayerModal";
@@ -8,6 +8,17 @@ import { SiteHeader } from "../components/SiteHeader";
 import { audioStories, musicWorks } from "../data/works";
 import { notes } from "../data/notes";
 import type { Work } from "../types/work";
+
+const favoriteMusicWorks = [
+  {
+    title: "【大头针 Official】全网最火的AI歌手 神仙翻唱",
+    url: "https://www.bilibili.com/video/BV1FPrqB6Ee7/?spm_id_from=333.337.search-card.all.click&vd_source=25380840c9c4c5700ec69c919588e7ce"
+  },
+  {
+    title: "美猴王",
+    url: "https://www.bilibili.com/video/BV1tVsHznELh/?spm_id_from=333.337.search-card.all.click"
+  }
+];
 
 export function HomePage() {
   const [activeWork, setActiveWork] = useState<Work | null>(null);
@@ -78,15 +89,29 @@ export function HomePage() {
           <header className="section-heading">
             <div><p className="eyeline">MUSIC WORKS</p><h2>音乐作品</h2></div>
           </header>
-          <Link className="music-topic-panel" to="/music">
-            <img src="/covers/gui-zhen-featured.png" alt="" />
-            <span className="story-panel__shade" />
-            <span className="story-panel__content">
-              <small>持续更新 · {musicWorks.length} 首</small>
-              <strong>《AI歌曲》</strong>
-              <span>进入专题与作品目录 <ArrowRight size={17} /></span>
-            </span>
-          </Link>
+          <div className="home-music-grid">
+            <Link className="music-topic-panel" to="/music">
+              <img src="/covers/gui-zhen-featured.png" alt="" />
+              <span className="story-panel__shade" />
+              <span className="story-panel__content">
+                <small>持续更新 · {musicWorks.length} 首</small>
+                <strong>《AI歌曲》</strong>
+                <span>进入专题与作品目录 <ArrowRight size={17} /></span>
+              </span>
+            </Link>
+            <div className="favorite-music-panel">
+              <p className="eyeline">FAVORITE MUSIC</p>
+              <h3>喜欢的音乐作品</h3>
+              <div className="favorite-music-list">
+                {favoriteMusicWorks.map((work) => (
+                  <a key={work.url} href={work.url} target="_blank" rel="noreferrer">
+                    <span>{work.title}</span>
+                    <ExternalLink size={17} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="learning-entry">
