@@ -1,0 +1,8 @@
+.git
+.netlify
+.tools
+node_modules
+dist
+学习资料
+*.tsbuildinfo
+.DS_Store
