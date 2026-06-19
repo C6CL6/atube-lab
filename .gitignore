@@ -1,0 +1,18 @@
+# Dependencies and local tools
+node_modules/
+.tools/
+
+# Build output and caches
+dist/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Local service state
+.netlify/
+
+# macOS metadata
+.DS_Store
+
+# Local learning videos (do not upload)
+学习资料/*.mp4
