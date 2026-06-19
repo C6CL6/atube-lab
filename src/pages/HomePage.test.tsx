@@ -18,7 +18,7 @@ describe("首页音乐专题入口", () => {
     expect(screen.queryByRole("heading", { name: "外卖骑手" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "原创 AI 歌曲" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /AI歌曲.*进入专题与作品目录/ }).querySelector("img"))
-      .toHaveAttribute("src", "/covers/gui-zhen-featured.png");
+      .toHaveAttribute("src", "/covers/ai-songs-editorial.png");
 
     expect(screen.getByRole("heading", { name: "喜欢的音乐作品" })).toBeInTheDocument();
     expect(

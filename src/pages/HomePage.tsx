@@ -91,7 +91,7 @@ export function HomePage() {
           </header>
           <div className="home-music-grid">
             <Link className="music-topic-panel" to="/music">
-              <img src="/covers/gui-zhen-featured.png" alt="" />
+              <img src="/covers/ai-songs-editorial.png" alt="" />
               <span className="story-panel__shade" />
               <span className="story-panel__content">
                 <small>持续更新 · {musicWorks.length} 首</small>
