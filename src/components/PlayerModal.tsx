@@ -10,6 +10,9 @@ type PlayerModalProps = {
 };
 
 export function PlayerModal({ work, onClose }: PlayerModalProps) {
+  const bilibiliUrl = getBilibiliVideoUrl(work.bvid);
+  const isAudioStory = work.category === "audio-story";
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -50,15 +53,34 @@ export function PlayerModal({ work, onClose }: PlayerModalProps) {
           />
         </div>
         <div className="player-modal__footer">
-          <p>若播放器因浏览器或B站限制无法加载，可直接前往原视频。</p>
-          <a
-            className="text-link"
-            href={getBilibiliVideoUrl(work.bvid)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            前往B站观看 <ExternalLink size={16} aria-hidden="true" />
-          </a>
+          <div className="player-modal__footer-copy">
+            <p>若播放器因浏览器或B站限制无法加载，可直接前往原视频。</p>
+            {isAudioStory ? (
+              <p className="background-play-hint">
+                进入 B站 App 后，请在播放器中开启后台播放。
+              </p>
+            ) : null}
+          </div>
+          <div className="player-modal__actions">
+            {isAudioStory ? (
+              <a
+                className="button button--primary background-play-action"
+                href={bilibiliUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                在 B站 App 后台播放 <ExternalLink size={16} aria-hidden="true" />
+              </a>
+            ) : null}
+            <a
+              className="text-link"
+              href={bilibiliUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              前往B站观看 <ExternalLink size={16} aria-hidden="true" />
+            </a>
+          </div>
         </div>
       </section>
     </div>,
