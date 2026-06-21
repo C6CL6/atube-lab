@@ -15,7 +15,7 @@ export function LearningPage() {
           <div className="learning-hero__copy">
             <LearningMark size={72} />
             <p className="eyeline">AI LEARNING ARCHIVE</p>
-            <h1>AI学习书房</h1>
+            <h1>AI 学习书房</h1>
             <p>
               收藏值得反复观看的AI学习内容，也记录从工具尝试到实际作品的制作经验。
               所有视频统一发布在B站，本站只负责整理与导航。
@@ -34,7 +34,6 @@ export function LearningPage() {
                 <p className="eyeline">LEARNING INDEX</p>
                 <h2>学习资料目录</h2>
               </div>
-              <p>不堆叠图片，以主题、难度和内容说明帮助快速判断是否值得观看。</p>
             </header>
             <div className="learning-resource-list">
               {learningResources.map((resource) => (

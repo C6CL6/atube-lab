@@ -11,11 +11,11 @@ import type { Work } from "../types/work";
 
 const favoriteMusicWorks = [
   {
-    title: "【大头针 Official】全网最火的AI歌手 神仙翻唱",
+    title: "【大头针】全网最火的AI歌手 神仙翻唱",
     url: "https://www.bilibili.com/video/BV1FPrqB6Ee7/?spm_id_from=333.337.search-card.all.click&vd_source=25380840c9c4c5700ec69c919588e7ce"
   },
   {
-    title: "美猴王",
+    title: "全网最火的AI歌曲 美猴王",
     url: "https://www.bilibili.com/video/BV1tVsHznELh/?spm_id_from=333.337.search-card.all.click"
   }
 ];
@@ -33,7 +33,7 @@ export function HomePage() {
             <p className="eyeline">SOUND · STORY · ARTIFICIAL INTELLIGENCE</p>
             <h1>让算法参与创作，<br />让作品保留人的判断。</h1>
             <p className="hero__intro">
-              这里收藏原创 AI 歌曲、声音叙事实验，以及从一句灵感走到成品的创作手记。
+              这里收藏原创 AI 歌曲、AI有声小说，以及从一句灵感走到成品的创作手记。
             </p>
             <div className="hero__actions">
               <Link className="button button--primary" to="/music">进入AI歌曲专题</Link>
@@ -45,7 +45,7 @@ export function HomePage() {
             <span className="hero-feature__veil" />
             <span className="hero-feature__content">
               <small>本期推荐 · 原创 AI 歌曲</small>
-              <strong>《归真》</strong>
+              <strong>《归 真》</strong>
               <span><Play size={15} fill="currentColor" /> 立即播放 · 03:26</span>
             </span>
           </button>
@@ -54,7 +54,7 @@ export function HomePage() {
         <section className="section section--stories" id="stories">
           <div className="page-shell">
             <header className="section-heading section-heading--light">
-              <div><p className="eyeline">AUDIO NARRATIVE</p><h2>AI 声音叙事实验</h2></div>
+              <div><p className="eyeline">AUDIO NARRATIVE</p><h2>AI 有声小说</h2></div>
               <p>为耳朵重新安排文字的时间。</p>
             </header>
             <div className="story-grid">
@@ -64,7 +64,7 @@ export function HomePage() {
                 <span className="story-panel__content">
                   <small>持续更新 · {audioStories.filter((work) => work.series === "主角").length} 集</small>
                   <strong>《主角》</strong>
-                  <small>陈彦 · 第十届茅盾文学奖获奖小说</small>
+                  <small>陈彦 · 第十届矛盾文学奖获奖小说</small>
                   <span>进入专题与分集目录 <ArrowRight size={17} /></span>
                 </span>
               </Link>
@@ -79,15 +79,14 @@ export function HomePage() {
               </Link>
             </div>
             <p className="copyright-notice">
-              风险提示：上述内容目前未获得原著信息网络传播授权。本站标注作者和免责声明不等于获得授权，
-              权利人可通过页尾邮箱联系下架。
+              风险提示：本站所有内容仅供学习使用，请勿用于商业用途。
             </p>
           </div>
         </section>
 
         <section className="section page-shell" id="music">
           <header className="section-heading">
-            <div><p className="eyeline">MUSIC WORKS</p><h2>音乐作品</h2></div>
+            <div><p className="eyeline">MUSIC WORKS</p><h2>AI 音乐作品</h2></div>
           </header>
           <div className="home-music-grid">
             <Link className="music-topic-panel" to="/music">
@@ -95,13 +94,13 @@ export function HomePage() {
               <span className="story-panel__shade" />
               <span className="story-panel__content">
                 <small>持续更新 · {musicWorks.length} 首</small>
-                <strong>《AI歌曲》</strong>
+                <strong>《原创 AI 歌曲》</strong>
                 <span>进入专题与作品目录 <ArrowRight size={17} /></span>
               </span>
             </Link>
             <div className="favorite-music-panel">
               <p className="eyeline">FAVORITE MUSIC</p>
-              <h3>喜欢的音乐作品</h3>
+              <h3>推荐 AI 歌曲</h3>
               <div className="favorite-music-list">
                 {favoriteMusicWorks.map((work) => (
                   <a key={work.url} href={work.url} target="_blank" rel="noreferrer">
@@ -119,7 +118,7 @@ export function HomePage() {
             <LearningMark size={68} />
             <div>
               <p className="eyeline">AI LEARNING ARCHIVE</p>
-              <h2>AI学习书房</h2>
+              <h2>AI 学习书房</h2>
             </div>
             <Link className="button button--ghost" to="/learning">
               进入学习专区 <ArrowRight size={16} />

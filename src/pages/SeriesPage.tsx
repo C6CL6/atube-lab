@@ -14,7 +14,7 @@ const seriesInfo = {
     name: "主角" as const,
     author: "陈彦",
     status: "持续更新",
-    award: "第十届茅盾文学奖获奖小说",
+    award: "第十届矛盾文学奖获奖小说",
     cover: "/covers/protagonist-editorial.png",
     summary: "从秦腔舞台与个人命运出发，观察一个普通人如何在时代、艺术与自我之间成为自己的主角。"
   },
@@ -22,7 +22,7 @@ const seriesInfo = {
     name: "命运" as const,
     author: "蔡崇达",
     status: "已完结",
-    award: null,
+    award: "矛盾文学奖入围小说",
     cover: "/covers/destiny-editorial.png",
     summary: "沿着故乡、家族与生命经验展开，在声音中重访人与命运彼此塑造的路径。"
   }
@@ -49,8 +49,8 @@ export function SeriesPage() {
             <img src={info.cover} alt={`${info.name}专题封面`} />
           </div>
           <div className="series-hero__copy">
-            <Link className="back-link" to="/#stories"><ArrowLeft size={16} /> 返回声音叙事</Link>
-            <p className="eyeline">AI 声音叙事实验 · {info.status}</p>
+            <Link className="back-link" to="/#stories"><ArrowLeft size={16} /> 返回AI 有声小说</Link>
+            <p className="eyeline">AI 有声小说 · {info.status}</p>
             <h1>《{info.name}》</h1>
             <p className="series-author">原著作者：{info.author}</p>
             {info.award ? <p className="series-award">{info.award}</p> : null}
@@ -71,7 +71,7 @@ export function SeriesPage() {
 
         <section className="legal-banner">
           <div className="page-shell">
-            <strong>版权状态：未获原著信息网络传播授权</strong>
+            <strong>版权状态：本站所有内容仅供学习使用，请勿用于商业用途。</strong>
             <p>
               本专题仅说明现有 AI 声音实验并链接至B站，不提供下载。署名、非商业说明和下架渠道均不能替代授权。
             </p>

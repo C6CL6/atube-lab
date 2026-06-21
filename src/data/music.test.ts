@@ -40,4 +40,21 @@ describe("音乐作品清单", () => {
       "/covers/lets-rock-bilibili.png"
     );
   });
+
+  it("以新发布的《碎碎念》替换马年拜年歌", () => {
+    expect(musicWorks.find((work) => work.id === "sui-sui-nian")).toEqual(
+      expect.objectContaining({
+        title: "碎碎念",
+        bvid: "BV1cjjE6AEqD",
+        cover: "/covers/碎碎念.png"
+      })
+    );
+    expect(musicWorks.some((work) => work.title === "马年拜年歌")).toBe(false);
+  });
+
+  it("《归真》使用黑神话封面", () => {
+    expect(musicWorks.find((work) => work.id === "gui-zhen")?.cover).toBe(
+      "/covers/黑神话.png"
+    );
+  });
 });

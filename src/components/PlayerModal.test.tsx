@@ -54,16 +54,20 @@ describe("播放器弹窗", () => {
     );
 
     expect(
-      screen.getByText("进入 B站 App 后，请在播放器中开启后台播放。")
-    ).toBeInTheDocument();
+      screen.queryByText("进入 B站 App 后，请在播放器中开启后台播放。")
+    ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "在 B站 App 后台播放" })
+      screen.getByRole("link", {
+        name: "前往 B站观看（可在 App 内开启后台播放）"
+      })
     ).toHaveAttribute(
       "href",
       "https://www.bilibili.com/video/BV1Example18"
     );
     expect(
-      screen.getByRole("link", { name: "在 B站 App 后台播放" })
+      screen.getByRole("link", {
+        name: "前往 B站观看（可在 App 内开启后台播放）"
+      })
     ).toHaveAttribute("target", "_blank");
   });
 });

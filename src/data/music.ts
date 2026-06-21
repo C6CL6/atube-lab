@@ -17,13 +17,12 @@ export const musicWorks: Work[] = [
     copyrightStatus: "original"
   },
   {
-    id: "new-year-song",
-    title: "马年拜年歌",
+    id: "sui-sui-nian",
+    title: "碎碎念",
     category: "original-music",
-    bvid: "BV1oKZKBREmg",
-    cover: "/covers/new-year-bilibili.png",
-    description: "用 AI 参与词曲与声音制作的新年原创歌曲。",
-    duration: "03:39",
+    bvid: "BV1cjjE6AEqD",
+    cover: "/covers/碎碎念.png",
+    description: "A-tube的灵感实验室新发布的 AI 音乐作品。",
     featured: true,
     copyrightStatus: "original"
   },
@@ -32,7 +31,7 @@ export const musicWorks: Work[] = [
     title: "归真",
     category: "original-music",
     bvid: "BV1bU6nBrEny",
-    cover: "/covers/gui-zhen-bilibili.png",
+    cover: "/covers/黑神话.png",
     description: "以厚重工业摇滚表达《黑神话》语境中的反抗、选择与归真。",
     duration: "03:26",
     featured: true,

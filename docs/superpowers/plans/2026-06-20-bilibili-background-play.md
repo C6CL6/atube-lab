@@ -19,9 +19,9 @@
 
 Render an `audio-story` work and assert that:
 
-- “在 B站 App 后台播放” is visible.
+- “前往 B站观看（可在 App 内开启后台播放）” is visible.
 - The link points to the current episode video.
-- The instruction “进入 B站 App 后，请在播放器中开启后台播放” is visible.
+- The separate instruction “进入 B站 App 后，请在播放器中开启后台播放” is absent.
 
 - [x] **Step 2: Protect music-player behavior**
 
@@ -47,7 +47,7 @@ Derive `isAudioStory` from `work.category === "audio-story"`.
 
 - [x] **Step 2: Render the conditional callout**
 
-For audio stories, display the instruction and a prominent external link to `getBilibiliVideoUrl(work.bvid)`. Keep the existing “前往B站观看” link available.
+For audio stories, display one prominent external link to `getBilibiliVideoUrl(work.bvid)` with the combined viewing and background-play wording. Do not render a separate instruction or duplicate viewing link.
 
 - [x] **Step 3: Style desktop and mobile layouts**
 
