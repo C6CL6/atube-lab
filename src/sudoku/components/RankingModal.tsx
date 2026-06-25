@@ -2,6 +2,7 @@ import type { GameRecord } from '../domain/types'
 
 type Props = {
   records: GameRecord[]
+  cloudUnavailable?: boolean
   onClose: () => void
 }
 
@@ -14,17 +15,18 @@ function formatRecordTime(value: string) {
   }).format(new Date(value))
 }
 
-export function RankingModal({ records, onClose }: Props) {
+export function RankingModal({ records, cloudUnavailable = false, onClose }: Props) {
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className="modal ranking-modal" role="dialog" aria-modal="true" aria-labelledby="ranking-title" onMouseDown={(event) => event.stopPropagation()}>
         <div className="modal-title-row">
           <div>
-            <p className="eyebrow">本机前十名</p>
+            <p className="eyebrow">{cloudUnavailable ? '本机备份前十名' : '云端前十名'}</p>
             <h2 id="ranking-title">高分排行榜</h2>
           </div>
           <button className="close-button" onClick={onClose} aria-label="关闭排行榜">×</button>
         </div>
+        {cloudUnavailable ? <p className="ranking-warning">云端排行榜暂时不可用，当前显示本机备份成绩。</p> : null}
         {records.length === 0 ? (
           <p className="empty-ranking">完成第一局后，成绩会出现在这里。</p>
         ) : (

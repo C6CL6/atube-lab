@@ -27,7 +27,13 @@ describe('排行榜弹窗', () => {
     expect(screen.getByText('拿到成绩时间')).toBeInTheDocument()
     expect(screen.getByText('阿土伯')).toBeInTheDocument()
     expect(screen.getByText('1688')).toBeInTheDocument()
-    expect(screen.queryByText('简单')).not.toBeInTheDocument()
+    expect(screen.queryByText('新手')).not.toBeInTheDocument()
     expect(screen.queryByText('05:00')).not.toBeInTheDocument()
+  })
+
+  it('云端排行榜不可用时显示提示', () => {
+    render(<RankingModal onClose={vi.fn()} records={[]} cloudUnavailable />)
+
+    expect(screen.getByText('云端排行榜暂时不可用，当前显示本机备份成绩。')).toBeInTheDocument()
   })
 })

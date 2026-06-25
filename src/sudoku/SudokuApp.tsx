@@ -3,19 +3,26 @@ import { GameScreen } from './components/GameScreen'
 import { DifficultyStartScreen } from './components/DifficultyStartScreen'
 import { LoginScreen } from './components/LoginScreen'
 import { RankingModal } from './components/RankingModal'
+import { fetchCloudRecords, submitCloudRecord } from './api/cloudRecords'
 import { rankRecords, topRankingRecords } from './domain/ranking'
 import type { AppData, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
 import { createUser, deleteUser, loadAppData, saveAppData } from './storage/storage'
 
 type Props = {
+  gameWindowMode?: boolean
+  onCloseWindow?: () => void
+  onOpenGameWindow?: () => boolean
   onPlayingChange?: (playing: boolean) => void
   onReturnHome?: () => void
 }
 
-export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
+export function SudokuApp({ gameWindowMode = false, onCloseWindow, onOpenGameWindow, onPlayingChange, onReturnHome }: Props = {}) {
   const [data, setData] = useState<AppData>(() => loadAppData())
   const [showRanking, setShowRanking] = useState(false)
+  const [playInCurrentWindow, setPlayInCurrentWindow] = useState(gameWindowMode)
+  const [cloudRecords, setCloudRecords] = useState<GameRecord[] | null>(null)
+  const [cloudUnavailable, setCloudUnavailable] = useState(false)
   const activeUser = data.users.find((user) => user.id === data.activeUserId)
   const currentGame = activeUser ? data.games[activeUser.id] : undefined
 
@@ -46,11 +53,28 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
     }
   }
 
-  const rankedRecords = useMemo(() => topRankingRecords(data.records), [data.records])
+  const rankedRecords = useMemo(
+    () => cloudRecords && !cloudUnavailable ? cloudRecords : topRankingRecords(data.records),
+    [cloudRecords, cloudUnavailable, data.records],
+  )
+
+  const refreshCloudRecords = useCallback(async () => {
+    const result = await fetchCloudRecords()
+    setCloudRecords(result.records)
+    setCloudUnavailable(result.unavailable)
+  }, [])
+
+  const syncRecordToCloud = useCallback((record: GameRecord) => {
+    void submitCloudRecord(record).then(() => refreshCloudRecords())
+  }, [refreshCloudRecords])
 
   useEffect(() => {
-    onPlayingChange?.(Boolean(activeUser && currentGame))
-  }, [activeUser, currentGame, onPlayingChange])
+    void refreshCloudRecords()
+  }, [refreshCloudRecords])
+
+  useEffect(() => {
+    onPlayingChange?.(Boolean(activeUser && currentGame && playInCurrentWindow))
+  }, [activeUser, currentGame, onPlayingChange, playInCurrentWindow])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -66,7 +90,7 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
           onDelete={removeUser}
           onShowRanking={() => setShowRanking(true)}
         />
-        {showRanking ? <RankingModal records={rankedRecords} onClose={() => setShowRanking(false)} /> : null}
+        {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
       </>
     )
   }
@@ -80,14 +104,21 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
   }
 
   const newGame = (difficulty: Difficulty) => {
-    persist({
+    const next = {
       ...data,
       lastDifficulty: difficulty,
       games: { ...data.games, [activeUser.id]: createGame(difficulty) },
-    })
+    }
+    persist(next)
+    if (gameWindowMode) {
+      setPlayInCurrentWindow(true)
+      return
+    }
+    const opened = onOpenGameWindow?.() ?? false
+    setPlayInCurrentWindow(!opened)
   }
 
-  if (!currentGame) {
+  if (!currentGame || !playInCurrentWindow) {
     return (
       <>
         <DifficultyStartScreen
@@ -96,7 +127,7 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
           onSwitchUser={() => persist({ ...data, activeUserId: null })}
           onShowRanking={() => setShowRanking(true)}
         />
-        {showRanking ? <RankingModal records={rankedRecords} onClose={() => setShowRanking(false)} /> : null}
+        {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
       </>
     )
   }
@@ -118,13 +149,14 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
       failed: game.score.frozen,
     }
     const records = [...data.records, record]
-    const rankedRecords = rankRecords(records)
+    const rankedRecords = rankRecords([...(cloudRecords ?? data.records), record])
     const rank = rankedRecords.findIndex((item) => item.id === record.id) + 1
     persist({
       ...data,
       games: { ...data.games, [activeUser.id]: game },
       records,
     })
+    syncRecordToCloud(record)
     return {
       score: record.score,
       rank: rank || rankedRecords.length + 1,
@@ -153,6 +185,7 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
       games,
       records: record ? [...data.records, record] : data.records,
     })
+    if (record) syncRecordToCloud(record)
   }
 
   const exitGame = (game: GameState) => {
@@ -177,9 +210,11 @@ export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
         onSwitchUser={() => persist({ ...data, activeUserId: null })}
         onShowRanking={() => setShowRanking(true)}
         onExitGame={() => exitGame(currentGame)}
+        onCloseWindow={onCloseWindow}
+        isGameWindow={gameWindowMode}
         onReturnHome={() => returnHome(currentGame)}
       />
-      {showRanking ? <RankingModal records={rankedRecords} onClose={() => setShowRanking(false)} /> : null}
+      {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
     </>
   )
 }

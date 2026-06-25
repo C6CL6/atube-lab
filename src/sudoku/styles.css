@@ -117,6 +117,7 @@
 .sudoku-app .ranking-heading { background: var(--ink); color: white; font-size: 14px; min-height: 42px; }
 .sudoku-app .ranking-row small { display: block; color: var(--brick); font-size: 12px; font-weight: 700; }
 .sudoku-app .empty-ranking { padding: 50px 0; text-align: center; color: var(--muted); font-size: 19px; }
+.sudoku-app .ranking-warning { margin: 0 0 12px; padding: 10px 12px; border: 1px solid rgba(145,63,48,.32); border-radius: 8px; background: rgba(145,63,48,.08); color: var(--brick); font-size: 15px; font-weight: 700; }
 
 @media (max-width: 980px) {
   .sudoku-app .page-shell { width: min(100% - 28px, 820px); }
@@ -223,6 +224,11 @@
 }
 
 .sudoku-app--playing {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
 }
@@ -277,6 +283,8 @@
   gap: 8px;
   min-width: 0;
 }
+.sudoku-app .window-close-button { width: 42px; height: 42px; border: 2px solid var(--ink); border-radius: 50%; background: var(--surface); color: var(--brick); display: grid; place-items: center; font-size: 30px; line-height: 1; font-weight: 900; cursor: pointer; }
+.sudoku-app .window-close-button:hover { background: #eaded0; }
 
 .sudoku-app .compact-user-chip {
   min-height: 34px;
@@ -478,6 +486,38 @@
 
   .sudoku-app--playing .number-key {
     font-size: clamp(22px, 5.2dvh, 34px);
+  }
+}
+
+@media (orientation: portrait) and (max-height: 760px) {
+  .sudoku-app--playing .game-heading { min-height: 58px; }
+  .sudoku-app--playing .game-layout {
+    --play-size: min(calc(100vw - 16px), calc((100dvh - 122px) * .66), 720px);
+    grid-template-rows: var(--play-size) minmax(132px, calc(100dvh - 130px - var(--play-size)));
+    gap: 6px;
+  }
+  .sudoku-app--playing .control-panel {
+    grid-template-rows: minmax(30px, .68fr) auto auto;
+    gap: 5px;
+    padding: 6px;
+  }
+  .sudoku-app--playing .number-pad {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-rows: minmax(30px, 1fr);
+    gap: 4px;
+  }
+  .sudoku-app--playing .number-key {
+    min-height: 30px;
+    font-size: clamp(17px, 4dvh, 26px);
+  }
+  .sudoku-app--playing .tool-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-self: end;
+  }
+  .sudoku-app--playing .tool-grid button { min-height: 34px; }
+  .sudoku-app--playing .new-game-button {
+    min-height: 36px;
+    align-self: end;
   }
 }
 

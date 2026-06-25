@@ -9,9 +9,9 @@ type Props = {
 }
 
 const OPTIONS: Array<{ difficulty: Difficulty; title: string; description: string }> = [
-  { difficulty: 'easy', title: '简单', description: '轻松热身' },
-  { difficulty: 'medium', title: '普通', description: '日常挑战' },
-  { difficulty: 'hard', title: '困难', description: '冲击高分' },
+  { difficulty: 'easy', title: '新手', description: '轻松热身' },
+  { difficulty: 'medium', title: '高手', description: '日常挑战' },
+  { difficulty: 'hard', title: '专家', description: '冲击高分' },
 ]
 
 export function DifficultyStartScreen({ user, onSelect, onSwitchUser, onShowRanking }: Props) {
@@ -21,7 +21,7 @@ export function DifficultyStartScreen({ user, onSelect, onSwitchUser, onShowRank
       <main className="start-difficulty">
         <p className="eyebrow">欢迎，{user.name}</p>
         <h1>选择游戏难度</h1>
-        <p className="lead">困难题的计分权重更高，更容易冲击排行榜。</p>
+        <p className="lead">专家题的计分权重更高，更容易冲击排行榜。</p>
         <div className="start-difficulty-grid">
           {OPTIONS.map((option) => (
             <button key={option.difficulty} onClick={() => onSelect(option.difficulty)}>

@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 describe("官网路由", () => {
@@ -62,13 +63,54 @@ describe("官网路由", () => {
     }));
 
     render(
-      <MemoryRouter initialEntries={["/sudoku"]}>
+      <MemoryRouter initialEntries={["/sudoku?window=game"]}>
         <App />
       </MemoryRouter>
     );
 
     expect(screen.getByRole("grid", { name: "数独棋盘" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "关闭游戏窗口" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "返回主页" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "排行榜" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
     expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
+  });
+
+  it("点击难度开始正式游戏时打开可缩放游戏窗口", async () => {
+    const focus = vi.fn();
+    const open = vi.spyOn(window, "open").mockReturnValue({ focus } as unknown as Window);
+    const user = {
+      id: "user-1",
+      name: "阿土伯",
+      avatarColor: "#913f30",
+      createdAt: "2026-06-25T00:00:00.000Z"
+    };
+    localStorage.setItem("atube-sudoku-v1", JSON.stringify({
+      version: 1,
+      users: [user],
+      activeUserId: user.id,
+      games: {},
+      records: [],
+      lastDifficulty: "easy"
+    }));
+    const userAction = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/sudoku"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    await userAction.click(screen.getByRole("button", { name: "新手 轻松热身" }));
+
+    await waitFor(() => {
+      expect(open).toHaveBeenCalledWith(
+        "/sudoku?window=game",
+        "atube-sudoku-game",
+        expect.stringContaining("resizable=yes"),
+      );
+    });
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(document.querySelector(".sudoku-app--playing")).not.toBeInTheDocument();
   });
 });

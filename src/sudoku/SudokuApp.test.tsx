@@ -54,13 +54,14 @@ describe('数独应用记录成绩', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.spyOn(window, 'confirm').mockReturnValue(true)
+    vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({ records: [] }), { status: 200 }))
   })
 
   it('完成棋盘后保留成绩记录，并写入开始和结束时间', async () => {
     saveAppDataWithGame()
     const userAction = userEvent.setup()
 
-    render(<SudokuApp />)
+    render(<SudokuApp gameWindowMode />)
 
     await userAction.click(screen.getByRole('button', { name: '继续游戏' }))
     await userAction.click(screen.getByRole('button', { name: '数字 9' }))
@@ -77,13 +78,16 @@ describe('数独应用记录成绩', () => {
     })
     expect(saved.records[0].score).toBeGreaterThan(0)
     expect(saved.records[0].completedAt).toEqual(expect.any(String))
+    await waitFor(() => {
+      expect(window.fetch).toHaveBeenCalledWith('/api/sudoku/records', expect.objectContaining({ method: 'POST' }))
+    })
   })
 
   it('退出游戏会保存当前分数并结束当前题局', async () => {
     saveAppDataWithGame()
     const userAction = userEvent.setup()
 
-    render(<SudokuApp />)
+    render(<SudokuApp gameWindowMode />)
 
     await userAction.click(screen.getByRole('button', { name: '退出游戏' }))
 
@@ -93,5 +97,8 @@ describe('数独应用记录成绩', () => {
     expect(saved.records[0].startedAt).toBe('2026-06-25T06:00:00.000Z')
     expect(saved.records[0].completedAt).toEqual(expect.any(String))
     expect(saved.games['user-1']).toBeUndefined()
+    await waitFor(() => {
+      expect(window.fetch).toHaveBeenCalledWith('/api/sudoku/records', expect.objectContaining({ method: 'POST' }))
+    })
   })
 })
