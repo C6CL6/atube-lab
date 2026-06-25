@@ -8,7 +8,12 @@ import type { AppData, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
 import { createUser, deleteUser, loadAppData, saveAppData } from './storage/storage'
 
-export function SudokuApp() {
+type Props = {
+  onPlayingChange?: (playing: boolean) => void
+  onReturnHome?: () => void
+}
+
+export function SudokuApp({ onPlayingChange, onReturnHome }: Props = {}) {
   const [data, setData] = useState<AppData>(() => loadAppData())
   const [showRanking, setShowRanking] = useState(false)
   const activeUser = data.users.find((user) => user.id === data.activeUserId)
@@ -44,6 +49,10 @@ export function SudokuApp() {
   const rankedRecords = useMemo(() => topRankingRecords(data.records), [data.records])
 
   useEffect(() => {
+    onPlayingChange?.(Boolean(activeUser && currentGame))
+  }, [activeUser, currentGame, onPlayingChange])
+
+  useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [activeUser?.id, currentGame?.id])
 
@@ -63,7 +72,11 @@ export function SudokuApp() {
   }
 
   const updateGame = (game: GameState) => {
-    persist({ ...data, games: { ...data.games, [activeUser.id]: game } })
+    setData((current) => {
+      const next = { ...current, games: { ...current.games, [activeUser.id]: game } }
+      saveAppData(next)
+      return next
+    })
   }
 
   const newGame = (difficulty: Difficulty) => {
@@ -100,6 +113,7 @@ export function SudokuApp() {
       elapsedSeconds: game.elapsedSeconds,
       mistakes: game.score.mistakes,
       difficulty: game.difficulty,
+      startedAt: game.startedAt,
       completedAt: new Date().toISOString(),
       failed: game.score.frozen,
     }
@@ -119,6 +133,39 @@ export function SudokuApp() {
     }
   }
 
+  const recordAndEndGame = (game: GameState) => {
+    const games = { ...data.games }
+    delete games[activeUser.id]
+    const record: GameRecord | null = game.recorded ? null : {
+      id: crypto.randomUUID(),
+      userId: activeUser.id,
+      username: activeUser.name,
+      score: game.score.score,
+      elapsedSeconds: game.elapsedSeconds,
+      mistakes: game.score.mistakes,
+      difficulty: game.difficulty,
+      startedAt: game.startedAt,
+      completedAt: new Date().toISOString(),
+      failed: game.score.frozen,
+    }
+    persist({
+      ...data,
+      games,
+      records: record ? [...data.records, record] : data.records,
+    })
+  }
+
+  const exitGame = (game: GameState) => {
+    if (!window.confirm('确定退出游戏吗？当前游戏会结束，分数会保存。')) return
+    recordAndEndGame(game)
+  }
+
+  const returnHome = (game: GameState) => {
+    if (!window.confirm('确定返回主页吗？当前游戏会结束，分数会保存。')) return
+    recordAndEndGame(game)
+    onReturnHome?.()
+  }
+
   return (
     <>
       <GameScreen
@@ -129,6 +176,8 @@ export function SudokuApp() {
         onComplete={completeGame}
         onSwitchUser={() => persist({ ...data, activeUserId: null })}
         onShowRanking={() => setShowRanking(true)}
+        onExitGame={() => exitGame(currentGame)}
+        onReturnHome={() => returnHome(currentGame)}
       />
       {showRanking ? <RankingModal records={rankedRecords} onClose={() => setShowRanking(false)} /> : null}
     </>

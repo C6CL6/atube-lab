@@ -44,9 +44,6 @@ export function saveAppData(data: AppData): void {
 export function createUser(data: AppData, rawName: string): { data: AppData; user: UserProfile } {
   const name = rawName.trim()
   if (name.length < 1 || name.length > 12) throw new Error('用户名需要1到12个字符')
-  if (data.users.some((user) => user.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
-    throw new Error('用户名已经存在')
-  }
   const user: UserProfile = {
     id: crypto.randomUUID(),
     name,

@@ -5,10 +5,13 @@ type Props = {
   onClose: () => void
 }
 
-const DIFFICULTY = { easy: '简单', medium: '普通', hard: '困难' }
-
-function formatTime(seconds: number) {
-  return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`
+function formatRecordTime(value: string) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
 }
 
 export function RankingModal({ records, onClose }: Props) {
@@ -27,15 +30,14 @@ export function RankingModal({ records, onClose }: Props) {
         ) : (
           <div className="ranking-list">
             <div className="ranking-row ranking-heading">
-              <span>名次</span><span>玩家</span><span>分数</span><span>难度</span><span>用时</span>
+              <span>名次</span><span>玩家</span><span>分数</span><span>拿到成绩时间</span>
             </div>
             {records.map((record, index) => (
               <div className="ranking-row" key={record.id}>
                 <strong>{index + 1}</strong>
                 <span>{record.username}{record.failed ? <small>挑战失败</small> : null}</span>
                 <strong>{record.score}</strong>
-                <span>{DIFFICULTY[record.difficulty]}</span>
-                <span>{formatTime(record.elapsedSeconds)}</span>
+                <span>{formatRecordTime(record.completedAt)}</span>
               </div>
             ))}
           </div>

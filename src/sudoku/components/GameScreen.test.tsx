@@ -44,12 +44,15 @@ describe('分数冻结后的游戏界面', () => {
         onComplete={vi.fn()}
         onSwitchUser={vi.fn()}
         onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
       />,
     )
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '数字 1' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '撤销一步' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '退出游戏' })).toBeInTheDocument()
     expect(screen.getByText('分数已冻结，继续完成棋盘')).toBeInTheDocument()
   })
 
@@ -63,6 +66,8 @@ describe('分数冻结后的游戏界面', () => {
         onComplete={vi.fn()}
         onSwitchUser={vi.fn()}
         onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
       />,
     )
 
@@ -79,6 +84,8 @@ describe('分数冻结后的游戏界面', () => {
         onComplete={vi.fn()}
         onSwitchUser={vi.fn()}
         onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
       />,
     )
 
@@ -123,6 +130,8 @@ function StatefulGame({ initialGame }: { initialGame: GameState }) {
       onComplete={() => ({ score: 0, rank: 1, previousBest: 0, failed: false })}
       onSwitchUser={vi.fn()}
       onShowRanking={vi.fn()}
+      onExitGame={vi.fn()}
+      onReturnHome={vi.fn()}
     />
   )
 }
@@ -143,6 +152,8 @@ describe('棋盘完成反馈', () => {
         onComplete={vi.fn()}
         onSwitchUser={vi.fn()}
         onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
       />,
     )
 
@@ -159,5 +170,55 @@ describe('棋盘完成反馈', () => {
 
     expect(screen.getByRole('gridcell', { name: '第1行第1列，数字1' })).toHaveClass('completed-flash')
     expect(screen.getByRole('gridcell', { name: '第1行第9列，数字9' })).toHaveClass('completed-flash')
+  })
+})
+
+describe('正式游戏退出入口', () => {
+  it('用退出游戏替代擦除数字，并调用保存退出处理', async () => {
+    const userAction = userEvent.setup()
+    const onExitGame = vi.fn()
+
+    render(
+      <GameScreen
+        user={user}
+        game={interactiveGame()}
+        onChange={vi.fn()}
+        onNewGame={vi.fn()}
+        onComplete={vi.fn()}
+        onSwitchUser={vi.fn()}
+        onShowRanking={vi.fn()}
+        onExitGame={onExitGame}
+        onReturnHome={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: '擦除数字' })).not.toBeInTheDocument()
+
+    await userAction.click(screen.getByRole('button', { name: '退出游戏' }))
+
+    expect(onExitGame).toHaveBeenCalledTimes(1)
+  })
+
+  it('顶部提供返回主页入口，并调用保存返回处理', async () => {
+    const userAction = userEvent.setup()
+    const onReturnHome = vi.fn()
+
+    render(
+      <GameScreen
+        user={user}
+        game={interactiveGame()}
+        onChange={vi.fn()}
+        onNewGame={vi.fn()}
+        onComplete={vi.fn()}
+        onSwitchUser={vi.fn()}
+        onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={onReturnHome}
+      />,
+    )
+
+    await userAction.click(screen.getByRole('button', { name: '返回主页' }))
+
+    expect(onReturnHome).toHaveBeenCalledTimes(1)
   })
 })

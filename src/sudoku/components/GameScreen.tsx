@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyCorrectMove, applyMistake, calculateCompletionBonus, resetStreak } from '../domain/scoring'
 import type { Difficulty, GameState, UserProfile } from '../domain/types'
-import { BrandHeader } from './BrandHeader'
 
 type Completion = {
   score: number
@@ -18,6 +17,8 @@ type Props = {
   onComplete: (game: GameState) => Completion
   onSwitchUser: () => void
   onShowRanking: () => void
+  onExitGame: () => void
+  onReturnHome: () => void
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: '简单', medium: '普通', hard: '困难' }
@@ -60,7 +61,7 @@ function newlyCompletedCells(index: number, before: number[], after: number[]) {
   ]
 }
 
-export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking }: Props) {
+export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, onReturnHome }: Props) {
   const [wrongCell, setWrongCell] = useState<number | null>(null)
   const [flashingCells, setFlashingCells] = useState<number[]>([])
   const [completion, setCompletion] = useState<Completion | null>(null)
@@ -212,9 +213,19 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
   })
 
   return (
-    <div className="page-shell">
-      <BrandHeader user={user} onSwitchUser={onSwitchUser} onShowRanking={onShowRanking} />
+    <div className="page-shell game-shell">
       <main>
+        <div className="game-toolbar">
+          <span className="game-brand"><span>A</span> 阿土伯灵感实验室出品</span>
+          <div className="game-toolbar-actions">
+            <button className="text-button" onClick={onReturnHome}>返回主页</button>
+            <button className="text-button" onClick={onShowRanking}>排行榜</button>
+            <button className="user-chip compact-user-chip" onClick={onSwitchUser}>
+              <span className="mini-avatar" style={{ background: user.avatarColor }}>{user.name.slice(0, 1)}</span>
+              <span>{user.name}</span>
+            </button>
+          </div>
+        </div>
         <div className="game-heading">
           <div>
             <p className="eyebrow">{DIFFICULTY_LABELS[game.difficulty]}难度 · 还剩 {remaining} 格</p>
@@ -291,8 +302,14 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
             {!game.score.frozen ? (
               <div className="tool-grid">
                 <button onClick={undo} disabled={game.history.length === 0}>撤销一步</button>
-                <button onClick={erase}>擦除数字</button>
+                <button onClick={onExitGame}>退出游戏</button>
                 <button onClick={hint}>给我提示</button>
+                <button onClick={() => onChange({ ...game, paused: true })}>暂停游戏</button>
+              </div>
+            ) : null}
+            {game.score.frozen ? (
+              <div className="tool-grid frozen-tool-grid">
+                <button onClick={onExitGame}>退出游戏</button>
                 <button onClick={() => onChange({ ...game, paused: true })}>暂停游戏</button>
               </div>
             ) : null}

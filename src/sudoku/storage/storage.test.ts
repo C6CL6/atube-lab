@@ -4,10 +4,14 @@ import { createUser, deleteUser, loadAppData, saveAppData } from './storage'
 describe('本机用户数据', () => {
   beforeEach(() => localStorage.clear())
 
-  it('创建用户时修剪空格并阻止重名', () => {
+  it('创建用户时修剪空格并允许重名玩家分别记录', () => {
     const first = createUser(loadAppData(), '  阿土伯  ')
+    const second = createUser(first.data, '阿土伯')
+
     expect(first.user.name).toBe('阿土伯')
-    expect(() => createUser(first.data, '阿土伯')).toThrow('用户名已经存在')
+    expect(second.user.name).toBe('阿土伯')
+    expect(second.user.id).not.toBe(first.user.id)
+    expect(second.data.users).toHaveLength(2)
   })
 
   it('删除用户时同步删除其进度和排行榜成绩', () => {

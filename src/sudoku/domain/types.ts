@@ -49,6 +49,7 @@ export type GameRecord = {
   elapsedSeconds: number
   mistakes: number
   difficulty: Difficulty
+  startedAt: string
   completedAt: string
   failed: boolean
 }

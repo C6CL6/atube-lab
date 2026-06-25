@@ -10,6 +10,7 @@ const record = (id: string, score: number, elapsedSeconds: number, mistakes: num
   elapsedSeconds,
   mistakes,
   difficulty: 'medium',
+  startedAt: '2026-06-21T09:30:00.000Z',
   completedAt: '2026-06-21T10:00:00.000Z',
   failed: false,
 })
