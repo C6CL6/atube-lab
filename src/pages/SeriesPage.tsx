@@ -14,7 +14,7 @@ const seriesInfo = {
     name: "主角" as const,
     author: "陈彦",
     status: "持续更新",
-    award: "第十届矛盾文学奖获奖小说",
+    award: "第十届茅盾文学奖获奖小说",
     cover: "/covers/protagonist-editorial.png",
     summary: "从秦腔舞台与个人命运出发，观察一个普通人如何在时代、艺术与自我之间成为自己的主角。"
   },
@@ -22,7 +22,7 @@ const seriesInfo = {
     name: "命运" as const,
     author: "蔡崇达",
     status: "已完结",
-    award: "矛盾文学奖入围小说",
+    award: "茅盾文学奖入围小说",
     cover: "/covers/destiny-editorial.png",
     summary: "沿着故乡、家族与生命经验展开，在声音中重访人与命运彼此塑造的路径。"
   }

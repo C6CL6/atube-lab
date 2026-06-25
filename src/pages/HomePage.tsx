@@ -64,7 +64,7 @@ export function HomePage() {
                 <span className="story-panel__content">
                   <small>持续更新 · {audioStories.filter((work) => work.series === "主角").length} 集</small>
                   <strong>《主角》</strong>
-                  <small>陈彦 · 第十届矛盾文学奖获奖小说</small>
+                  <small>陈彦 · 第十届茅盾文学奖获奖小说</small>
                   <span>进入专题与分集目录 <ArrowRight size={17} /></span>
                 </span>
               </Link>

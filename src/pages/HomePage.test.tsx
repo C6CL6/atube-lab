@@ -36,4 +36,15 @@ describe("首页音乐专题入口", () => {
       "_blank"
     );
   });
+
+  it("使用正式的茅盾文学奖名称", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getAllByText("陈彦 · 第十届茅盾文学奖获奖小说").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/矛盾文学奖/)).not.toBeInTheDocument();
+  });
 });
