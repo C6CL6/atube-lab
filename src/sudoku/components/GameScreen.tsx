@@ -18,7 +18,6 @@ type Props = {
   onSwitchUser: () => void
   onShowRanking: () => void
   onExitGame: () => void
-  onCloseWindow?: () => void
   isGameWindow?: boolean
   onReturnHome: () => void
 }
@@ -63,7 +62,7 @@ function newlyCompletedCells(index: number, before: number[], after: number[]) {
   ]
 }
 
-export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, onCloseWindow, isGameWindow = false, onReturnHome }: Props) {
+export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome }: Props) {
   const [wrongCell, setWrongCell] = useState<number | null>(null)
   const [flashingCells, setFlashingCells] = useState<number[]>([])
   const [completion, setCompletion] = useState<Completion | null>(null)
@@ -215,25 +214,21 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
   })
 
   return (
-    <div className="page-shell game-shell">
+    <div className={`page-shell game-shell ${isGameWindow ? 'game-shell--window' : ''}`}>
       <main>
-        <div className="game-toolbar">
-          <span className="game-brand"><span>A</span> 阿土伯灵感实验室出品</span>
-          <div className="game-toolbar-actions">
-            {isGameWindow ? (
-              <button className="window-close-button" onClick={onCloseWindow} aria-label="关闭游戏窗口">×</button>
-            ) : (
-              <>
-                <button className="text-button" onClick={onReturnHome}>返回主页</button>
-                <button className="text-button" onClick={onShowRanking}>排行榜</button>
-                <button className="user-chip compact-user-chip" onClick={onSwitchUser}>
-                  <span className="mini-avatar" style={{ background: user.avatarColor }}>{user.name.slice(0, 1)}</span>
-                  <span>{user.name}</span>
-                </button>
-              </>
-            )}
+        {isGameWindow ? null : (
+          <div className="game-toolbar">
+            <span className="game-brand"><span>A</span> 阿土伯灵感实验室出品</span>
+            <div className="game-toolbar-actions">
+              <button className="text-button" onClick={onReturnHome}>返回主页</button>
+              <button className="text-button" onClick={onShowRanking}>排行榜</button>
+              <button className="user-chip compact-user-chip" onClick={onSwitchUser}>
+                <span className="mini-avatar" style={{ background: user.avatarColor }}>{user.name.slice(0, 1)}</span>
+                <span>{user.name}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="game-heading">
           <div>
             <p className="eyebrow">{DIFFICULTY_LABELS[game.difficulty]}难度 · 还剩 {remaining} 格</p>

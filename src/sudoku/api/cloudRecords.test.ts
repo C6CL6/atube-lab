@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { GameRecord } from '../domain/types'
-import { fetchCloudRecords, submitCloudRecord } from './cloudRecords'
+import { fetchCloudRecords, getCloudRecordsEndpoint, submitCloudRecord } from './cloudRecords'
 
 function makeRecord(score: number): GameRecord {
   return {
@@ -27,7 +27,16 @@ describe('云端成绩客户端', () => {
     vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({ records }), { status: 200 }))
 
     await expect(fetchCloudRecords()).resolves.toEqual({ records, unavailable: false })
-    expect(window.fetch).toHaveBeenCalledWith('/api/sudoku/records', { headers: { Accept: 'application/json' } })
+    expect(window.fetch).toHaveBeenCalledWith(
+      'https://atube-inspiration-lab.netlify.app/api/sudoku/records',
+      { headers: { Accept: 'application/json' } },
+    )
+  })
+
+  it('本地开发地址使用正式云端接口，方便跨设备测试成绩', () => {
+    expect(getCloudRecordsEndpoint('127.0.0.1')).toBe('https://atube-inspiration-lab.netlify.app/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('localhost')).toBe('https://atube-inspiration-lab.netlify.app/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('atube-inspiration-lab.netlify.app')).toBe('/api/sudoku/records')
   })
 
   it('云端不可用时返回安全降级状态', async () => {
@@ -41,7 +50,7 @@ describe('云端成绩客户端', () => {
     vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({ record }), { status: 201 }))
 
     await expect(submitCloudRecord(record)).resolves.toEqual({ ok: true })
-    expect(window.fetch).toHaveBeenCalledWith('/api/sudoku/records', {
+    expect(window.fetch).toHaveBeenCalledWith('https://atube-inspiration-lab.netlify.app/api/sudoku/records', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(record),

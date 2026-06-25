@@ -69,7 +69,8 @@ describe("官网路由", () => {
     );
 
     expect(screen.getByRole("grid", { name: "数独棋盘" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "关闭游戏窗口" })).toBeInTheDocument();
+    expect(screen.queryByText("阿土伯灵感实验室出品")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "关闭游戏窗口" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "返回主页" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "排行榜" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();

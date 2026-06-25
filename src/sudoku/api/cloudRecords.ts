@@ -1,13 +1,21 @@
 import type { GameRecord } from '../domain/types'
 
+const PRODUCTION_RECORDS_ENDPOINT = 'https://atube-inspiration-lab.netlify.app/api/sudoku/records'
+
 type CloudRecordsResponse = {
   records: GameRecord[]
   unavailable: boolean
 }
 
+export function getCloudRecordsEndpoint(hostname = window.location.hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+    ? PRODUCTION_RECORDS_ENDPOINT
+    : '/api/sudoku/records'
+}
+
 export async function fetchCloudRecords(): Promise<CloudRecordsResponse> {
   try {
-    const response = await fetch('/api/sudoku/records', { headers: { Accept: 'application/json' } })
+    const response = await fetch(getCloudRecordsEndpoint(), { headers: { Accept: 'application/json' } })
     if (!response.ok) return { records: [], unavailable: true }
     const body = await response.json() as { records?: GameRecord[] }
     return { records: Array.isArray(body.records) ? body.records : [], unavailable: false }
@@ -18,7 +26,7 @@ export async function fetchCloudRecords(): Promise<CloudRecordsResponse> {
 
 export async function submitCloudRecord(record: GameRecord): Promise<{ ok: boolean }> {
   try {
-    const response = await fetch('/api/sudoku/records', {
+    const response = await fetch(getCloudRecordsEndpoint(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(record),

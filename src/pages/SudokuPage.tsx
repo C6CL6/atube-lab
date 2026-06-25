@@ -37,7 +37,6 @@ export function SudokuPage() {
       <div className={playing || gameWindow ? "sudoku-app sudoku-app--playing" : "sudoku-app"}>
         <SudokuApp
           gameWindowMode={gameWindow}
-          onCloseWindow={() => window.close()}
           onOpenGameWindow={openGameWindow}
           onPlayingChange={setPlaying}
           onReturnHome={() => navigate("/")}

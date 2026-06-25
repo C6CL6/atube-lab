@@ -25,6 +25,21 @@ function json(body: unknown, status = 200) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    },
+  })
+}
+
+function empty(status = 204) {
+  return new Response(null, {
+    status,
+    headers: {
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     },
   })
 }
@@ -85,6 +100,10 @@ async function loadRecords() {
 
 export default async (req: Request) => {
   try {
+    if (req.method === 'OPTIONS') {
+      return empty()
+    }
+
     if (req.method === 'GET') {
       const records = await loadRecords()
       return json({ records: rankRecords(records).slice(0, RANKING_LIMIT) })

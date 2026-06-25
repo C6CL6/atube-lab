@@ -248,6 +248,10 @@
   grid-template-rows: auto auto minmax(0, 1fr);
 }
 
+.sudoku-app--playing .game-shell--window main {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .sudoku-app .game-toolbar {
   min-height: 38px;
   display: flex;
@@ -335,6 +339,10 @@
   overflow: hidden;
 }
 
+.sudoku-app--playing .game-shell--window .game-layout {
+  --play-size: min(calc(100dvh - 76px), calc((100vw - 276px) * .68), 780px);
+}
+
 .sudoku-app--playing .board-wrap {
   width: var(--play-size);
   height: var(--play-size);
@@ -409,6 +417,10 @@
     grid-template-rows: auto auto minmax(0, 1fr);
   }
 
+  .sudoku-app--playing .game-shell--window main {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
   .sudoku-app--playing .game-toolbar {
     min-height: 34px;
   }
@@ -466,6 +478,11 @@
     justify-items: center;
   }
 
+  .sudoku-app--playing .game-shell--window .game-layout {
+    --play-size: min(calc(100vw - 16px), calc((100dvh - 94px) * .68), 740px);
+    grid-template-rows: var(--play-size) minmax(150px, calc(100dvh - 98px - var(--play-size)));
+  }
+
   .sudoku-app--playing .board-wrap,
   .sudoku-app--playing .control-panel {
     width: var(--play-size);
@@ -495,6 +512,10 @@
     --play-size: min(calc(100vw - 16px), calc((100dvh - 122px) * .66), 720px);
     grid-template-rows: var(--play-size) minmax(132px, calc(100dvh - 130px - var(--play-size)));
     gap: 6px;
+  }
+  .sudoku-app--playing .game-shell--window .game-layout {
+    --play-size: min(calc(100vw - 16px), calc((100dvh - 82px) * .68), 740px);
+    grid-template-rows: var(--play-size) minmax(132px, calc(100dvh - 86px - var(--play-size)));
   }
   .sudoku-app--playing .control-panel {
     grid-template-rows: minmax(30px, .68fr) auto auto;

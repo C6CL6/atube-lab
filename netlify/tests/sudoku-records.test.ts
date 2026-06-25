@@ -95,4 +95,14 @@ describe('/api/sudoku/records', () => {
 
     expect(response.status).toBe(400)
   })
+
+  it('支持本地开发跨域提交成绩', async () => {
+    const response = await handler(new Request('https://example.com/api/sudoku/records', {
+      method: 'OPTIONS',
+    }))
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST')
+  })
 })

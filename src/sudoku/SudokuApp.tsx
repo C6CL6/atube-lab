@@ -11,13 +11,12 @@ import { createUser, deleteUser, loadAppData, saveAppData } from './storage/stor
 
 type Props = {
   gameWindowMode?: boolean
-  onCloseWindow?: () => void
   onOpenGameWindow?: () => boolean
   onPlayingChange?: (playing: boolean) => void
   onReturnHome?: () => void
 }
 
-export function SudokuApp({ gameWindowMode = false, onCloseWindow, onOpenGameWindow, onPlayingChange, onReturnHome }: Props = {}) {
+export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingChange, onReturnHome }: Props = {}) {
   const [data, setData] = useState<AppData>(() => loadAppData())
   const [showRanking, setShowRanking] = useState(false)
   const [playInCurrentWindow, setPlayInCurrentWindow] = useState(gameWindowMode)
@@ -210,7 +209,6 @@ export function SudokuApp({ gameWindowMode = false, onCloseWindow, onOpenGameWin
         onSwitchUser={() => persist({ ...data, activeUserId: null })}
         onShowRanking={() => setShowRanking(true)}
         onExitGame={() => exitGame(currentGame)}
-        onCloseWindow={onCloseWindow}
         isGameWindow={gameWindowMode}
         onReturnHome={() => returnHome(currentGame)}
       />
