@@ -80,7 +80,7 @@ describe('数独应用记录成绩', () => {
     expect(saved.records[0].completedAt).toEqual(expect.any(String))
     await waitFor(() => {
       expect(window.fetch).toHaveBeenCalledWith(
-        'https://atube-inspiration-lab.netlify.app/api/sudoku/records',
+        'https://atube.ccwu.cc/api/sudoku/records',
         expect.objectContaining({ method: 'POST' }),
       )
     })
@@ -102,9 +102,36 @@ describe('数独应用记录成绩', () => {
     expect(saved.games['user-1']).toBeUndefined()
     await waitFor(() => {
       expect(window.fetch).toHaveBeenCalledWith(
-        'https://atube-inspiration-lab.netlify.app/api/sudoku/records',
+        'https://atube.ccwu.cc/api/sudoku/records',
         expect.objectContaining({ method: 'POST' }),
       )
     })
+  })
+
+  it('开局前可选择极简棋盘风格并保存到本局游戏', async () => {
+    const user: UserProfile = {
+      id: 'user-1',
+      name: '阿土伯',
+      avatarColor: '#913f30',
+      createdAt: '2026-06-25T00:00:00.000Z',
+    }
+    const data: AppData = {
+      version: 1,
+      users: [user],
+      activeUserId: user.id,
+      games: {},
+      records: [],
+      lastDifficulty: 'easy',
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    const userAction = userEvent.setup()
+
+    render(<SudokuApp gameWindowMode />)
+
+    await userAction.click(screen.getByRole('button', { name: '极简棋盘 清爽线框，更接近原来的界面' }))
+    await userAction.click(screen.getByRole('button', { name: '新手 轻松热身' }))
+
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AppData
+    expect(saved.games['user-1'].boardStyle).toBe('minimal')
   })
 })

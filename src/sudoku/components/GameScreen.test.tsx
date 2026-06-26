@@ -171,6 +171,22 @@ describe('棋盘完成反馈', () => {
     expect(screen.getByRole('gridcell', { name: '第1行第1列，数字1' })).toHaveClass('completed-flash')
     expect(screen.getByRole('gridcell', { name: '第1行第9列，数字9' })).toHaveClass('completed-flash')
   })
+
+  it('正确填入数字后，在格子里显示本次加分', async () => {
+    const userAction = userEvent.setup()
+    render(<StatefulGame initialGame={interactiveGame()} />)
+
+    await userAction.click(screen.getByRole('button', { name: '数字 9' }))
+
+    expect(screen.getByText('+1200')).toHaveClass('score-pop')
+  })
+
+  it('选择极简棋盘时，正式游戏使用极简棋盘类名', () => {
+    render(<StatefulGame initialGame={{ ...interactiveGame(), boardStyle: 'minimal' }} />)
+
+    expect(screen.getByRole('grid', { name: '数独棋盘' })).toHaveClass('board-style-minimal')
+    expect(screen.getByLabelText('选择数字面板')).toHaveClass('control-style-minimal')
+  })
 })
 
 describe('正式游戏退出入口', () => {

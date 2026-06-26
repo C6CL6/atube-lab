@@ -1,0 +1,8 @@
+name = "atube"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-06-25"
+
+[[kv_namespaces]]
+binding = "ATUBE_KV"
+id = "4b805b578156481591542738e9a31261"
+preview_id = "0e76478418cd496f8ce1741700aa058a"

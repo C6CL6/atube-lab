@@ -10,6 +10,7 @@ vite.config.d.ts
 
 # Local service state
 .netlify/
+.wrangler/
 
 # macOS metadata
 .DS_Store

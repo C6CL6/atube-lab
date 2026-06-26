@@ -47,4 +47,15 @@ describe("首页音乐专题入口", () => {
     expect(screen.getAllByText("陈彦 · 第十届茅盾文学奖获奖小说").length).toBeGreaterThan(0);
     expect(screen.queryByText(/矛盾文学奖/)).not.toBeInTheDocument();
   });
+
+  it("首页提供数独游戏入口", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "数独挑战" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /进入数独游戏/ })).toHaveAttribute("href", "/sudoku");
+  });
 });

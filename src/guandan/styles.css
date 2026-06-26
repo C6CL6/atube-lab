@@ -1,0 +1,981 @@
+.guandan-shell {
+  min-height: 100vh;
+  padding: 22px clamp(14px, 3vw, 34px) 34px;
+  color: #f7f3eb;
+  background:
+    linear-gradient(135deg, rgba(38, 33, 28, .96), rgba(26, 58, 44, .95)),
+    #243a31;
+}
+
+.guandan-topbar,
+.guandan-entry,
+.guandan-layout {
+  width: min(1320px, 100%);
+  margin-inline: auto;
+}
+
+.guandan-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 18px;
+}
+
+.guandan-brand {
+  display: block;
+  color: #d8c6aa;
+  font-size: .82rem;
+}
+
+.guandan-topbar h1 {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  letter-spacing: 0;
+}
+
+.guandan-score {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.guandan-score span,
+.guandan-score strong,
+.guandan-entry,
+.guandan-side section,
+.guandan-seat,
+.guandan-trick,
+.guandan-hand {
+  border: 1px solid rgba(247, 243, 235, .16);
+  background: rgba(247, 243, 235, .08);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+}
+
+.guandan-score span,
+.guandan-score strong {
+  padding: 9px 12px;
+  font-size: .86rem;
+}
+
+.guandan-score strong {
+  color: #201b17;
+  background: #e3c16f;
+}
+
+.guandan-entry {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) auto auto minmax(180px, .8fr);
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding: 14px;
+}
+
+.guandan-entry label {
+  display: grid;
+  gap: 6px;
+  color: #d8c6aa;
+  font-size: .82rem;
+}
+
+.guandan-entry input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(247, 243, 235, .22);
+  color: #fffaf2;
+  background: rgba(0, 0, 0, .18);
+  outline: none;
+}
+
+.guandan-button,
+.guandan-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid rgba(247, 243, 235, .26);
+  color: #fffaf2;
+  background: rgba(255, 255, 255, .08);
+  cursor: pointer;
+}
+
+.guandan-button {
+  padding: 0 16px;
+}
+
+.guandan-button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.guandan-button--primary {
+  border-color: #b24d3d;
+  background: #b24d3d;
+}
+
+.guandan-button--full {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.guandan-button--mini {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: .78rem;
+}
+
+.guandan-icon-button {
+  width: 42px;
+  padding: 0;
+}
+
+.guandan-error {
+  margin: 0;
+  color: #ffccbd;
+  font-size: .86rem;
+}
+
+.guandan-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 18px;
+}
+
+.guandan-table {
+  min-height: 660px;
+  padding: clamp(14px, 2.2vw, 24px);
+  border: 1px solid rgba(227, 193, 111, .35);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(42, 118, 77, .92), rgba(23, 74, 52, .96) 54%, rgba(29, 30, 25, .96) 100%);
+}
+
+.guandan-table__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.guandan-table__header div {
+  display: grid;
+  gap: 4px;
+}
+
+.guandan-table__header span,
+.guandan-trick span,
+.guandan-hand__title span,
+.guandan-muted {
+  color: #d8c6aa;
+  font-size: .84rem;
+}
+
+.guandan-seats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    ". top ."
+    "left center right";
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.guandan-seat:nth-child(1) { grid-area: center; }
+.guandan-seat:nth-child(2) { grid-area: right; }
+.guandan-seat:nth-child(3) { grid-area: top; }
+.guandan-seat:nth-child(4) { grid-area: left; }
+
+.guandan-seat {
+  min-height: 92px;
+  padding: 14px;
+}
+
+.guandan-seat--current {
+  border-color: #e3c16f;
+  background: rgba(227, 193, 111, .18);
+}
+
+.guandan-seat span,
+.guandan-seat small {
+  display: block;
+  color: #d8c6aa;
+  font-size: .78rem;
+}
+
+.guandan-seat strong {
+  display: block;
+  margin: 8px 0 6px;
+  font-size: 1.05rem;
+}
+
+.guandan-trick {
+  display: grid;
+  place-items: center;
+  min-height: 150px;
+  margin: 22px auto;
+  padding: 18px;
+  text-align: center;
+}
+
+.guandan-trick p {
+  margin: 8px 0 0;
+  color: #fffaf2;
+}
+
+.guandan-hand {
+  padding: 14px;
+}
+
+.guandan-hand__title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.guandan-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 72px;
+}
+
+.guandan-card-stack {
+  position: relative;
+  height: 78px;
+  flex: 0 0 auto;
+}
+
+.guandan-card {
+  position: absolute;
+  top: 0;
+  width: 46px;
+  height: 64px;
+  border: 1px solid rgba(45, 37, 31, .22);
+  color: #201b17;
+  background: #fffaf2;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .16);
+  cursor: pointer;
+}
+
+.guandan-card--selected {
+  transform: translateY(-10px);
+  border-color: #e3c16f;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, .18);
+}
+
+.guandan-card__red {
+  color: #b24d3d;
+}
+
+.guandan-card-stack__count {
+  position: absolute;
+  right: -2px;
+  bottom: 5px;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(32, 27, 23, .28);
+  color: #201b17;
+  background: #e3c16f;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.guandan-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.guandan-side {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.guandan-side section {
+  padding: 14px;
+}
+
+.guandan-side h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: .98rem;
+}
+
+.guandan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(247, 243, 235, .12);
+  font-size: .86rem;
+}
+
+.guandan-row--empty {
+  color: #d8c6aa;
+}
+
+.guandan-row strong,
+.guandan-policy span {
+  color: #e3c16f;
+}
+
+.guandan-policy {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.guandan-log {
+  margin: 0;
+  padding-left: 20px;
+  color: #d8c6aa;
+  line-height: 1.8;
+  font-size: .84rem;
+}
+
+.guandan-shell--playing {
+  min-height: 100vh;
+  padding: 8px 14px 12px;
+  background:
+    radial-gradient(circle at 45% 35%, rgba(83, 50, 28, .34), transparent 32%),
+    linear-gradient(90deg, rgba(24, 18, 14, .96), rgba(47, 30, 19, .96) 42%, rgba(20, 18, 16, .98)),
+    #17120f;
+}
+
+.guandan-shell--playing .guandan-topbar {
+  position: relative;
+  width: calc(100vw - 28px);
+  max-width: none;
+  min-height: 68px;
+  margin: 0 auto;
+  border-bottom: 1px solid rgba(213, 180, 124, .24);
+}
+
+.guandan-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guandan-seal {
+  display: none;
+}
+
+.guandan-shell--playing .guandan-seal {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(243, 213, 158, .4);
+  color: #f2d39b;
+  background: #8d2d26;
+  font-family: var(--serif);
+  font-size: .76rem;
+  line-height: 1.05;
+}
+
+.guandan-shell--playing .guandan-brand {
+  color: #f4d7a4;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+}
+
+.guandan-shell--playing .guandan-topbar h1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.guandan-button--ghost {
+  border-color: rgba(231, 204, 156, .16);
+  color: #f3dfbd;
+  background: rgba(255, 255, 255, .07);
+}
+
+.guandan-shell--playing .guandan-score span,
+.guandan-shell--playing .guandan-score strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  box-shadow: none;
+  color: #e8dac2;
+  background: transparent;
+}
+
+.guandan-shell--playing .guandan-score strong {
+  color: #dff7d7;
+}
+
+.guandan-shell--playing .guandan-icon-button {
+  border-radius: 999px;
+  border-color: rgba(231, 204, 156, .24);
+  background: rgba(255, 255, 255, .1);
+}
+
+.guandan-shell--playing .guandan-layout {
+  width: calc(100vw - 28px);
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 8px;
+}
+
+.guandan-shell--playing .guandan-table {
+  position: relative;
+  min-height: calc(100vh - 86px);
+  overflow: hidden;
+  padding: 0 18px 22px;
+  border-color: rgba(214, 160, 93, .45);
+  border-radius: 7px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(39, 113, 75, .94), rgba(17, 73, 48, .98) 60%, rgba(12, 52, 36, .98)),
+    #164b35;
+  box-shadow: inset 0 0 0 16px rgba(103, 57, 31, .72), inset 0 0 0 22px rgba(55, 31, 20, .78), 0 22px 80px rgba(0, 0, 0, .42);
+}
+
+.guandan-shell--playing .guandan-table::before {
+  content: '';
+  position: absolute;
+  inset: 74px 54px 60px;
+  border: 2px solid rgba(243, 213, 158, .11);
+  border-radius: 38px;
+  pointer-events: none;
+}
+
+.guandan-shell--playing .guandan-table__header {
+  display: none;
+}
+
+.guandan-scoreboard {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto auto minmax(260px, 1fr);
+  align-items: center;
+  width: min(720px, 62vw);
+  min-height: 50px;
+  margin: 0 auto;
+  padding: 0 22px;
+  color: #f1d9a6;
+  background: linear-gradient(90deg, #402116, #943326 38%, #273a4e 75%, #1e3449);
+  clip-path: polygon(3% 0, 97% 0, 94% 100%, 6% 100%);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, .32);
+}
+
+.guandan-scoreboard span {
+  padding-right: 22px;
+  font-size: .88rem;
+}
+
+.guandan-scoreboard strong {
+  justify-self: center;
+  color: #f8e6c9;
+  font-size: .98rem;
+}
+
+.guandan-scoreboard b {
+  margin: 0 20px;
+  font-size: 1.9rem;
+}
+
+.guandan-shell--playing .guandan-seats {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) minmax(180px, 1fr);
+  grid-template-areas:
+    ". top ."
+    "left center right"
+    "self self self";
+  gap: 28px 20px;
+  min-height: 390px;
+  margin: 10px 18px 0;
+}
+
+.guandan-shell--playing .guandan-seat:nth-child(1) { grid-area: self; justify-self: start; align-self: end; }
+.guandan-shell--playing .guandan-seat:nth-child(2) { grid-area: right; justify-self: end; align-self: center; }
+.guandan-shell--playing .guandan-seat:nth-child(3) { grid-area: left; justify-self: start; align-self: center; }
+.guandan-shell--playing .guandan-seat:nth-child(4) { grid-area: top; justify-self: center; align-self: start; }
+
+.guandan-shell--playing .guandan-seat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 188px;
+  min-height: 78px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guandan-avatar {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border: 3px solid rgba(231, 195, 106, .88);
+  border-radius: 50%;
+  color: #fff4db;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 240, 195, .22), transparent 28%),
+    linear-gradient(135deg, #70483e, #1f3444);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .38), 0 10px 24px rgba(0, 0, 0, .34);
+  font-weight: 800;
+}
+
+.guandan-seat--self .guandan-avatar {
+  width: 82px;
+  height: 82px;
+  border-color: #f3bd4a;
+}
+
+.guandan-seat--current .guandan-avatar {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, .42), 0 0 0 7px rgba(49, 202, 83, .32), 0 12px 28px rgba(0, 0, 0, .36);
+}
+
+.guandan-seat__body {
+  display: grid;
+  gap: 4px;
+}
+
+.guandan-shell--playing .guandan-seat span {
+  width: max-content;
+  padding: 4px 8px;
+  border: 1px solid rgba(246, 230, 198, .34);
+  border-radius: 4px;
+  color: #f4e0bd;
+  background: rgba(25, 17, 12, .54);
+  font-size: .82rem;
+}
+
+.guandan-shell--playing .guandan-seat--self span,
+.guandan-shell--playing .guandan-seat:nth-child(3) span {
+  border-color: rgba(255, 123, 104, .6);
+  background: #ba3a32;
+}
+
+.guandan-shell--playing .guandan-seat strong {
+  margin: 0;
+  color: #fff7e8;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
+}
+
+.guandan-shell--playing .guandan-seat small {
+  width: max-content;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #f3dfbd;
+  background: rgba(7, 19, 13, .62);
+  font-size: .82rem;
+}
+
+.guandan-shell--playing .guandan-trick {
+  position: absolute;
+  z-index: 3;
+  top: 31%;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 250px;
+  min-height: 116px;
+  margin: 0;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(17, 42, 29, .82);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .28);
+}
+
+.guandan-trick__cards {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.guandan-mini-card {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 50px;
+  border: 1px solid rgba(0, 0, 0, .25);
+  border-radius: 4px;
+  color: #1b1714;
+  background: #fff8ec;
+  font-weight: 800;
+}
+
+.guandan-mini-card--red {
+  color: #b5322f;
+}
+
+.guandan-shell--playing .guandan-hand {
+  position: relative;
+  z-index: 4;
+  margin: 0 auto;
+  width: min(990px, calc(100vw - 420px));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guandan-shell--playing .guandan-hand__title {
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-left: 88px;
+}
+
+.guandan-shell--playing .guandan-hand__title strong {
+  color: #fff0c8;
+}
+
+.guandan-shell--playing .guandan-cards {
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  min-height: 116px;
+}
+
+.guandan-shell--playing .guandan-card-stack {
+  height: 106px;
+}
+
+.guandan-shell--playing .guandan-card {
+  width: 52px;
+  height: 96px;
+  border-color: rgba(40, 34, 28, .26);
+  border-radius: 5px;
+  font-size: 1.52rem;
+  font-weight: 800;
+  box-shadow: 0 7px 0 rgba(0, 0, 0, .17), inset 0 0 0 1px rgba(255, 255, 255, .7);
+}
+
+.guandan-shell--playing .guandan-card--selected {
+  transform: translateY(-14px);
+  border-color: #e6b94e;
+  box-shadow: 0 0 0 2px rgba(230, 185, 78, .55), 0 12px 0 rgba(0, 0, 0, .18);
+}
+
+.guandan-turn-tip {
+  width: max-content;
+  margin: 8px auto 0;
+  padding: 7px 22px;
+  border-radius: 7px;
+  color: #2a1b0d;
+  background: linear-gradient(#ffd270, #f0a83d);
+  font-weight: 800;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, .26);
+}
+
+.guandan-play-hint {
+  margin: 8px 0 0;
+  color: #f5d884;
+  text-align: left;
+  font-weight: 700;
+}
+
+.guandan-shell--playing .guandan-actions {
+  justify-content: center;
+  gap: 26px;
+  margin-top: 12px;
+}
+
+.guandan-shell--playing .guandan-actions .guandan-button {
+  min-width: 128px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.guandan-shell--playing .guandan-actions .guandan-button--primary {
+  background: linear-gradient(#d64842, #a92d29);
+}
+
+.guandan-table-tools {
+  position: absolute;
+  z-index: 5;
+  left: 18px;
+  bottom: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.guandan-shell--playing .guandan-side {
+  gap: 6px;
+}
+
+.guandan-shell--playing .guandan-side section {
+  padding: 12px;
+  border-color: rgba(235, 204, 152, .2);
+  border-radius: 7px;
+  background: rgba(25, 19, 15, .74);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+
+.guandan-shell--playing .guandan-side h2 {
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #f4dfbd;
+}
+
+.guandan-room-code {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.guandan-room-code strong {
+  color: #fff5e6;
+  font-size: 1.6rem;
+}
+
+.guandan-invite-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.guandan-invite-line span {
+  overflow: hidden;
+  padding: 8px;
+  border: 1px solid rgba(235, 204, 152, .16);
+  border-radius: 5px;
+  color: #e7d4b6;
+  background: rgba(0, 0, 0, .2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .78rem;
+}
+
+.guandan-shell--playing .guandan-row {
+  border-top-color: rgba(235, 204, 152, .12);
+  color: #f2dfc1;
+}
+
+.guandan-shell--playing .guandan-row strong {
+  color: #e7d093;
+  white-space: nowrap;
+}
+
+.guandan-shell--playing .guandan-log {
+  max-height: 190px;
+  overflow: auto;
+  color: #d5c0a0;
+  line-height: 1.75;
+}
+
+@media (max-width: 920px) {
+  .guandan-topbar,
+  .guandan-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guandan-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .guandan-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .guandan-layout {
+    display: block;
+  }
+
+  .guandan-side {
+    margin-top: 16px;
+  }
+
+  .guandan-seats {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "top top"
+      "left right"
+      "center center";
+  }
+
+  .guandan-card {
+    width: 40px;
+    height: 58px;
+  }
+
+  .guandan-shell--playing {
+    padding: 8px 10px 18px;
+    overflow-x: hidden;
+  }
+
+  .guandan-shell--playing .guandan-topbar {
+    width: 100%;
+    min-height: auto;
+    padding: 14px 0 12px;
+    align-items: flex-start;
+  }
+
+  .guandan-shell--playing .guandan-topbar__brand {
+    flex-wrap: wrap;
+  }
+
+  .guandan-shell--playing .guandan-brand {
+    font-size: 1.05rem;
+  }
+
+  .guandan-shell--playing .guandan-topbar h1 {
+    position: static;
+    transform: none;
+    order: 2;
+    width: 100%;
+    margin-top: 8px;
+    font-size: 1.8rem;
+  }
+
+  .guandan-shell--playing .guandan-score {
+    justify-content: flex-start;
+  }
+
+  .guandan-shell--playing .guandan-layout {
+    width: 100%;
+    display: block;
+  }
+
+  .guandan-shell--playing .guandan-table {
+    min-height: 760px;
+    padding: 0 12px 18px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 10px rgba(103, 57, 31, .72), inset 0 0 0 15px rgba(55, 31, 20, .78), 0 18px 60px rgba(0, 0, 0, .36);
+  }
+
+  .guandan-shell--playing .guandan-table::before {
+    inset: 80px 22px 54px;
+    border-radius: 26px;
+  }
+
+  .guandan-scoreboard {
+    width: calc(100% + 8px);
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 8px;
+    min-height: 62px;
+    padding: 0 18px;
+  }
+
+  .guandan-scoreboard strong {
+    grid-column: 1 / -1;
+    font-size: .86rem;
+  }
+
+  .guandan-scoreboard b {
+    margin: 0 8px;
+    font-size: 1.35rem;
+  }
+
+  .guandan-shell--playing .guandan-seats {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "top top"
+      "left right"
+      "self self";
+    gap: 12px;
+    min-height: 300px;
+    margin: 12px 8px 0;
+  }
+
+  .guandan-shell--playing .guandan-seat {
+    min-width: 0;
+  }
+
+  .guandan-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .guandan-seat--self .guandan-avatar {
+    width: 58px;
+    height: 58px;
+  }
+
+  .guandan-shell--playing .guandan-seat strong,
+  .guandan-shell--playing .guandan-seat small,
+  .guandan-shell--playing .guandan-seat span {
+    font-size: .74rem;
+  }
+
+  .guandan-shell--playing .guandan-trick {
+    top: 38%;
+    min-width: 190px;
+    min-height: 92px;
+    padding: 12px 14px;
+  }
+
+  .guandan-shell--playing .guandan-hand {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .guandan-shell--playing .guandan-hand__title {
+    padding-left: 12px;
+  }
+
+  .guandan-shell--playing .guandan-cards {
+    justify-content: flex-start;
+    min-height: 92px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .guandan-shell--playing .guandan-card-stack {
+    height: 84px;
+  }
+
+  .guandan-shell--playing .guandan-card {
+    width: 42px;
+    height: 74px;
+    font-size: 1.05rem;
+  }
+
+  .guandan-shell--playing .guandan-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .guandan-shell--playing .guandan-actions .guandan-button {
+    min-width: 0;
+    font-size: 1rem;
+  }
+
+  .guandan-table-tools {
+    position: static;
+    margin-top: 12px;
+  }
+
+  .guandan-shell--playing .guandan-side {
+    margin-top: 10px;
+  }
+
+  .guandan-invite-line {
+    grid-template-columns: 1fr;
+  }
+}

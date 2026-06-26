@@ -126,6 +126,21 @@ export function HomePage() {
           </div>
         </section>
 
+        <section className="sudoku-entry">
+          <div className="page-shell sudoku-entry__inner">
+            <div>
+              <p className="eyeline">BRAIN GAME</p>
+              <h2>数独挑战</h2>
+              <p>
+                为大屏、手机和平板优化的数独小游戏：大字棋盘、本机排行榜，也可以打开独立游戏窗口。
+              </p>
+            </div>
+            <Link className="button button--primary" to="/sudoku">
+              进入数独游戏 <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
         <section className="section section--notes" id="notes">
           <div className="page-shell notes-layout">
             <div className="notes-intro">

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "deploy:cloudflare": "pnpm run build && pnpm --package=wrangler dlx wrangler pages deploy dist --project-name atube --branch main",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint ."

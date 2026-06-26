@@ -24,6 +24,7 @@ type Props = {
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: '新手', medium: '高手', hard: '专家' }
 const FLASH_DURATION_MS = 900
+const SCORE_POP_DURATION_MS = 900
 
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`
@@ -65,9 +66,12 @@ function newlyCompletedCells(index: number, before: number[], after: number[]) {
 export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome }: Props) {
   const [wrongCell, setWrongCell] = useState<number | null>(null)
   const [flashingCells, setFlashingCells] = useState<number[]>([])
+  const [scorePops, setScorePops] = useState<Array<{ id: number; index: number; points: number }>>([])
   const [completion, setCompletion] = useState<Completion | null>(null)
   const [newGameOpen, setNewGameOpen] = useState(false)
   const flashTimer = useRef<number | null>(null)
+  const scorePopTimers = useRef<number[]>([])
+  const scorePopId = useRef(0)
 
   useEffect(() => {
     if (game.paused || game.completed) return
@@ -87,6 +91,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
 
   useEffect(() => () => {
     if (flashTimer.current !== null) window.clearTimeout(flashTimer.current)
+    scorePopTimers.current.forEach((timer) => window.clearTimeout(timer))
   }, [])
 
   const selectedValue = game.selectedIndex === null ? 0 : game.values[game.selectedIndex]
@@ -136,6 +141,18 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
     }, FLASH_DURATION_MS)
   }
 
+  const showScorePop = (index: number, points: number) => {
+    if (points <= 0) return
+    const id = scorePopId.current + 1
+    scorePopId.current = id
+    setScorePops((current) => [...current, { id, index, points }])
+    const timer = window.setTimeout(() => {
+      setScorePops((current) => current.filter((item) => item.id !== id))
+      scorePopTimers.current = scorePopTimers.current.filter((item) => item !== timer)
+    }, SCORE_POP_DURATION_MS)
+    scorePopTimers.current = [...scorePopTimers.current, timer]
+  }
+
   const enterNumber = (value: number) => {
     const index = game.selectedIndex
     if (index === null || game.paused || game.completed || game.puzzle[index] !== 0) return
@@ -148,6 +165,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
       return
     }
     const score = applyCorrectMove(game.score, index)
+    showScorePop(index, score.score - game.score.score)
     const values = [...game.values]
     values[index] = value
     flashCompletedGroups(index, game.values, values)
@@ -252,7 +270,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
 
         <div className="game-layout">
           <div className={`board-wrap ${game.paused ? 'is-paused' : ''}`}>
-            <div className="sudoku-board" role="grid" aria-label="数独棋盘">
+            <div className={`sudoku-board board-style-${game.boardStyle ?? 'decorative'}`} role="grid" aria-label="数独棋盘">
               {game.values.map((value, index) => {
                 const selected = index === game.selectedIndex
                 const sameValue = selectedValue > 0 && value === selectedValue
@@ -273,7 +291,10 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
                     aria-label={`第${Math.floor(index / 9) + 1}行第${index % 9 + 1}列${value ? `，数字${value}` : '，空格'}`}
                     onClick={() => onChange({ ...game, selectedIndex: index })}
                   >
-                    {wrongCell === index ? '×' : value || ''}
+                    <span className="cell-value">{wrongCell === index ? '×' : value || ''}</span>
+                    {scorePops
+                      .filter((item) => item.index === index)
+                      .map((item) => <span className="score-pop" key={item.id}>+{item.points}</span>)}
                   </button>
                 )
               })}
@@ -286,7 +307,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
             ) : null}
           </div>
 
-          <aside className="control-panel">
+          <aside className={`control-panel control-style-${game.boardStyle ?? 'decorative'}`} aria-label="选择数字面板">
             <h2>选择数字</h2>
             <p>先点棋盘空格，再点一个大数字。</p>
             <div className="number-pad">

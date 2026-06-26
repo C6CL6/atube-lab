@@ -8,6 +8,7 @@ const navItems = [
   ["声音叙事", "/#stories"],
   ["AI学习", "/learning"],
   ["数独", "/sudoku"],
+  ["掼蛋", "/guandan"],
   ["创作手记", "/#notes"],
   ["关于", "/#about"]
 ];

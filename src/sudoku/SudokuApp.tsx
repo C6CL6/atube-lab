@@ -5,7 +5,7 @@ import { LoginScreen } from './components/LoginScreen'
 import { RankingModal } from './components/RankingModal'
 import { fetchCloudRecords, submitCloudRecord } from './api/cloudRecords'
 import { rankRecords, topRankingRecords } from './domain/ranking'
-import type { AppData, Difficulty, GameRecord, GameState } from './domain/types'
+import type { AppData, BoardStyle, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
 import { createUser, deleteUser, loadAppData, saveAppData } from './storage/storage'
 
@@ -102,11 +102,12 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
     })
   }
 
-  const newGame = (difficulty: Difficulty) => {
+  const newGame = (difficulty: Difficulty, boardStyle: BoardStyle = data.lastBoardStyle ?? 'decorative') => {
     const next = {
       ...data,
       lastDifficulty: difficulty,
-      games: { ...data.games, [activeUser.id]: createGame(difficulty) },
+      lastBoardStyle: boardStyle,
+      games: { ...data.games, [activeUser.id]: createGame(difficulty, boardStyle) },
     }
     persist(next)
     if (gameWindowMode) {
@@ -122,6 +123,7 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
       <>
         <DifficultyStartScreen
           user={activeUser}
+          defaultBoardStyle={data.lastBoardStyle ?? 'decorative'}
           onSelect={newGame}
           onSwitchUser={() => persist({ ...data, activeUserId: null })}
           onShowRanking={() => setShowRanking(true)}

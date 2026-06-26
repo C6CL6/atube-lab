@@ -11,6 +11,7 @@ export function createEmptyData(): AppData {
     games: {},
     records: [],
     lastDifficulty: 'medium',
+    lastBoardStyle: 'decorative',
   }
 }
 

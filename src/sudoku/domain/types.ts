@@ -1,4 +1,5 @@
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type BoardStyle = 'decorative' | 'minimal'
 
 export type ScoreState = {
   difficulty: Difficulty
@@ -20,6 +21,7 @@ export type Move = {
 export type GameState = {
   id: string
   difficulty: Difficulty
+  boardStyle?: BoardStyle
   puzzle: number[]
   solution: number[]
   values: number[]
@@ -61,4 +63,5 @@ export type AppData = {
   games: Record<string, GameState>
   records: GameRecord[]
   lastDifficulty: Difficulty
+  lastBoardStyle?: BoardStyle
 }

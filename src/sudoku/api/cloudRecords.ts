@@ -1,6 +1,6 @@
 import type { GameRecord } from '../domain/types'
 
-const PRODUCTION_RECORDS_ENDPOINT = 'https://atube-inspiration-lab.netlify.app/api/sudoku/records'
+const PRODUCTION_RECORDS_ENDPOINT = 'https://atube.ccwu.cc/api/sudoku/records'
 
 type CloudRecordsResponse = {
   records: GameRecord[]
