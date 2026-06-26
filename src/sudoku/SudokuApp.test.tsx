@@ -80,7 +80,7 @@ describe('数独应用记录成绩', () => {
     expect(saved.records[0].completedAt).toEqual(expect.any(String))
     await waitFor(() => {
       expect(window.fetch).toHaveBeenCalledWith(
-        'https://atube.ccwu.cc/api/sudoku/records',
+        'https://atube-lab.netlify.app/api/sudoku/records',
         expect.objectContaining({ method: 'POST' }),
       )
     })
@@ -102,7 +102,7 @@ describe('数独应用记录成绩', () => {
     expect(saved.games['user-1']).toBeUndefined()
     await waitFor(() => {
       expect(window.fetch).toHaveBeenCalledWith(
-        'https://atube.ccwu.cc/api/sudoku/records',
+        'https://atube-lab.netlify.app/api/sudoku/records',
         expect.objectContaining({ method: 'POST' }),
       )
     })

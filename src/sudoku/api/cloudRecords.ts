@@ -1,6 +1,6 @@
 import type { GameRecord } from '../domain/types'
 
-const PRODUCTION_RECORDS_ENDPOINT = 'https://atube.ccwu.cc/api/sudoku/records'
+const PRODUCTION_RECORDS_ENDPOINT = 'https://atube-lab.netlify.app/api/sudoku/records'
 
 type CloudRecordsResponse = {
   records: GameRecord[]
@@ -8,7 +8,9 @@ type CloudRecordsResponse = {
 }
 
 export function getCloudRecordsEndpoint(hostname = window.location.hostname) {
-  return hostname === 'localhost' || hostname === '127.0.0.1'
+  return hostname === 'atube-lab.netlify.app'
+    ? '/api/sudoku/records'
+    : hostname === 'localhost' || hostname === '127.0.0.1' || hostname === 'atube-inspiration-lab.netlify.app'
     ? PRODUCTION_RECORDS_ENDPOINT
     : '/api/sudoku/records'
 }
