@@ -114,4 +114,30 @@ describe("官网路由", () => {
     expect(focus).toHaveBeenCalledTimes(1);
     expect(document.querySelector(".sudoku-app--playing")).not.toBeInTheDocument();
   });
+
+  it("游戏窗口尚未开局时不锁定为正式游戏布局，手机端仍可滚动选择难度", () => {
+    const user = {
+      id: "user-1",
+      name: "阿土伯",
+      avatarColor: "#913f30",
+      createdAt: "2026-06-25T00:00:00.000Z"
+    };
+    localStorage.setItem("atube-sudoku-v1", JSON.stringify({
+      version: 1,
+      users: [user],
+      activeUserId: user.id,
+      games: {},
+      records: [],
+      lastDifficulty: "easy"
+    }));
+
+    render(
+      <MemoryRouter initialEntries={["/sudoku?window=game"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "选择游戏界面与难度" })).toBeInTheDocument();
+    expect(document.querySelector(".sudoku-app--playing")).not.toBeInTheDocument();
+  });
 });

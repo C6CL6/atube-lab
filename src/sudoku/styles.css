@@ -96,7 +96,8 @@
 .sudoku-app .sudoku-cell.given .cell-value:not(:empty),
 .sudoku-app .sudoku-cell.editable .cell-value:not(:empty) { color: #fff8ea; background: linear-gradient(145deg, #d8783e, #8d3f22); box-shadow: inset 0 0 0 2px rgba(255,208,141,.35), 0 2px 4px rgba(78,45,23,.28); text-shadow: 0 2px 1px rgba(74,35,19,.55); }
 .sudoku-app .sudoku-cell.related { filter: brightness(1.04) saturate(1.04); }
-.sudoku-app .sudoku-cell.same-value .cell-value:not(:empty) { background: linear-gradient(145deg, #d8783e, #8d3f22); color: #fff8ea; box-shadow: inset 0 0 0 2px rgba(255,208,141,.35), 0 2px 4px rgba(78,45,23,.28), 0 0 0 3px rgba(47,138,70,.28); text-shadow: 0 2px 1px rgba(74,35,19,.55); }
+.sudoku-app .sudoku-board:not(.board-style-minimal) .sudoku-cell.same-value { z-index: 2; box-shadow: inset 0 0 0 4px var(--green), 0 0 0 2px rgba(255,255,255,.62); }
+.sudoku-app .sudoku-cell.same-value .cell-value:not(:empty) { background: linear-gradient(145deg, #d8783e, #8d3f22); color: #fff8ea; box-shadow: inset 0 0 0 2px rgba(255,208,141,.35), 0 2px 4px rgba(78,45,23,.28); text-shadow: 0 2px 1px rgba(74,35,19,.55); }
 .sudoku-app .sudoku-cell.selected { z-index: 3; box-shadow: inset 0 0 0 4px var(--green), 0 0 0 2px rgba(255,255,255,.62); }
 .sudoku-app .sudoku-cell.selected .cell-value:not(:empty) { background: linear-gradient(145deg, #d8783e, #8d3f22); color: #fff8ea; }
 .sudoku-app .sudoku-cell.selected .cell-value:empty { background: linear-gradient(145deg, #71bd78, #2f8a46); color: white; }

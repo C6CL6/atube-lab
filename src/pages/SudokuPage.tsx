@@ -34,7 +34,7 @@ export function SudokuPage() {
   return (
     <>
       {playing || gameWindow ? null : <SiteHeader />}
-      <div className={playing || gameWindow ? "sudoku-app sudoku-app--playing" : "sudoku-app"}>
+      <div className={playing ? "sudoku-app sudoku-app--playing" : "sudoku-app"}>
         <SudokuApp
           gameWindowMode={gameWindow}
           onOpenGameWindow={openGameWindow}
