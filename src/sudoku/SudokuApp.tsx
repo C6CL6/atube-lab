@@ -52,10 +52,11 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
     }
   }
 
-  const rankedRecords = useMemo(
-    () => cloudRecords && !cloudUnavailable ? cloudRecords : topRankingRecords(data.records),
-    [cloudRecords, cloudUnavailable, data.records],
+  const onlineRankingRecords = useMemo(
+    () => cloudRecords && !cloudUnavailable ? topRankingRecords(cloudRecords) : [],
+    [cloudRecords, cloudUnavailable],
   )
+  const localRankingRecords = useMemo(() => topRankingRecords(data.records), [data.records])
 
   const refreshCloudRecords = useCallback(async () => {
     const result = await fetchCloudRecords()
@@ -66,6 +67,12 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   const syncRecordToCloud = useCallback((record: GameRecord) => {
     void submitCloudRecord(record).then(() => refreshCloudRecords())
   }, [refreshCloudRecords])
+
+  const clearLocalRanking = () => {
+    if (data.records.length === 0) return
+    if (!window.confirm('确定清零本机排行榜吗？这只会删除当前浏览器里的本机成绩，不影响在线排行榜。')) return
+    persist({ ...data, records: [] })
+  }
 
   useEffect(() => {
     void refreshCloudRecords()
@@ -89,7 +96,15 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
           onDelete={removeUser}
           onShowRanking={() => setShowRanking(true)}
         />
-        {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
+        {showRanking ? (
+          <RankingModal
+            onlineRecords={onlineRankingRecords}
+            localRecords={localRankingRecords}
+            cloudUnavailable={cloudUnavailable}
+            onClearLocal={clearLocalRanking}
+            onClose={() => setShowRanking(false)}
+          />
+        ) : null}
       </>
     )
   }
@@ -128,7 +143,15 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
           onSwitchUser={() => persist({ ...data, activeUserId: null })}
           onShowRanking={() => setShowRanking(true)}
         />
-        {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
+        {showRanking ? (
+          <RankingModal
+            onlineRecords={onlineRankingRecords}
+            localRecords={localRankingRecords}
+            cloudUnavailable={cloudUnavailable}
+            onClearLocal={clearLocalRanking}
+            onClose={() => setShowRanking(false)}
+          />
+        ) : null}
       </>
     )
   }
@@ -214,7 +237,15 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
         isGameWindow={gameWindowMode}
         onReturnHome={() => returnHome(currentGame)}
       />
-      {showRanking ? <RankingModal records={rankedRecords} cloudUnavailable={cloudUnavailable} onClose={() => setShowRanking(false)} /> : null}
+      {showRanking ? (
+        <RankingModal
+          onlineRecords={onlineRankingRecords}
+          localRecords={localRankingRecords}
+          cloudUnavailable={cloudUnavailable}
+          onClearLocal={clearLocalRanking}
+          onClose={() => setShowRanking(false)}
+        />
+      ) : null}
     </>
   )
 }

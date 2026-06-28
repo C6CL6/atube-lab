@@ -136,6 +136,21 @@ function StatefulGame({ initialGame }: { initialGame: GameState }) {
   )
 }
 
+function gameWithHistory(difficulty: GameState['difficulty']): GameState {
+  const game = interactiveGame()
+  return {
+    ...game,
+    difficulty,
+    history: [{
+      type: 'correct',
+      index: 8,
+      previousValue: 0,
+      nextValue: 9,
+      scoreBefore: game.score,
+    }],
+  }
+}
+
 describe('棋盘完成反馈', () => {
   it('某个数字填满9个后，选择数字按钮变灰并不可点击', () => {
     const game = interactiveGame()
@@ -236,5 +251,31 @@ describe('正式游戏退出入口', () => {
     await userAction.click(screen.getByRole('button', { name: '返回主页' }))
 
     expect(onReturnHome).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('新手撤销机会', () => {
+  it('新手难度撤销一步可撤销错误输入，并减少一次错误次数', async () => {
+    const userAction = userEvent.setup()
+    render(<StatefulGame initialGame={interactiveGame()} />)
+
+    await userAction.click(screen.getByRole('button', { name: '数字 8' }))
+    expect(screen.getByTestId('mistake-counter')).toHaveTextContent('1 / 3')
+
+    await userAction.click(screen.getByRole('button', { name: '撤销一步' }))
+
+    expect(screen.getByTestId('mistake-counter')).toHaveTextContent('0 / 3')
+    expect(screen.getByRole('gridcell', { name: '第1行第9列，空格' })).toBeInTheDocument()
+  })
+
+  it('高手和专家难度撤销一步按钮置灰', () => {
+    const { unmount } = render(<StatefulGame initialGame={gameWithHistory('medium')} />)
+
+    expect(screen.getByRole('button', { name: '撤销一步' })).toBeDisabled()
+
+    unmount()
+    render(<StatefulGame initialGame={gameWithHistory('hard')} />)
+
+    expect(screen.getByRole('button', { name: '撤销一步' })).toBeDisabled()
   })
 })

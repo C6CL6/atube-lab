@@ -12,6 +12,7 @@ export type ScoreState = {
 }
 
 export type Move = {
+  type?: 'correct' | 'mistake'
   index: number
   previousValue: number
   nextValue: number

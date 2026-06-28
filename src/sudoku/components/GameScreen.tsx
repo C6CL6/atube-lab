@@ -160,7 +160,14 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
       const score = applyMistake(game.score)
       setWrongCell(index)
       window.setTimeout(() => setWrongCell(null), 650)
-      const next = { ...game, score }
+      const next = {
+        ...game,
+        score,
+        history: [
+          ...game.history,
+          { type: 'mistake' as const, index, previousValue: game.values[index], nextValue: value, scoreBefore: game.score },
+        ],
+      }
       onChange(next)
       return
     }
@@ -173,7 +180,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
       ...game,
       values,
       score,
-      history: [...game.history, { index, previousValue: 0, nextValue: value, scoreBefore: game.score }],
+      history: [...game.history, { type: 'correct', index, previousValue: 0, nextValue: value, scoreBefore: game.score }],
     })
     onChange(next)
   }
@@ -188,14 +195,14 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
 
   const undo = () => {
     const move = game.history.at(-1)
-    if (!move) return
+    if (!move || game.difficulty !== 'easy') return
     const values = [...game.values]
     values[move.index] = move.previousValue
     onChange({
       ...game,
       values,
       selectedIndex: move.index,
-      score: resetStreak(game.score),
+      score: move.type === 'mistake' ? move.scoreBefore : resetStreak(game.score),
       history: game.history.slice(0, -1),
     })
   }
@@ -325,7 +332,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
             </div>
             {!game.score.frozen ? (
               <div className="tool-grid">
-                <button onClick={undo} disabled={game.history.length === 0}>撤销一步</button>
+                <button onClick={undo} disabled={game.difficulty !== 'easy' || game.history.length === 0}>撤销一步</button>
                 <button onClick={onExitGame}>退出游戏</button>
                 <button onClick={hint}>给我提示</button>
                 <button onClick={() => onChange({ ...game, paused: true })}>暂停游戏</button>
