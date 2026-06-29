@@ -21,6 +21,17 @@ describe("官网路由", () => {
     expect(screen.getAllByText("A-tube的灵感实验室").length).toBeGreaterThan(0);
   });
 
+  it("临时访问 /guandan 时回到首页基准内容", () => {
+    render(
+      <MemoryRouter initialEntries={["/guandan"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "在线掼蛋" })).not.toBeInTheDocument();
+  });
+
   it("进入正式数独游戏后隐藏官网导航和页脚，释放游戏空间", () => {
     const user = {
       id: "user-1",
