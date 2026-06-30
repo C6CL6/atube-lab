@@ -6,6 +6,7 @@ import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { WorkCard } from "../components/WorkCard";
 import { musicWorks } from "../data/music";
+import { coverUrl } from "../lib/assets";
 import type { Work } from "../types/work";
 
 const bilibiliWorksUrl = "https://space.bilibili.com/586333146/lists/7404619?type=season";
@@ -21,7 +22,7 @@ export function MusicPage() {
       <main>
         <section className="music-hero page-shell">
           <div className="music-hero__cover">
-            <img src="/covers/gui-zhen-featured.png" alt="《归真》水墨山水专题封面" />
+            <img src={coverUrl("gui-zhen-featured.png")} alt="《归真》水墨山水专题封面" />
           </div>
           <div className="music-hero__copy">
             <Link className="back-link" to="/#music"><ArrowLeft size={16} /> 返回首页</Link>

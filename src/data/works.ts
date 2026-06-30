@@ -1,5 +1,6 @@
 import type { Work } from "../types/work";
 import { formatDuration } from "../lib/bilibili";
+import { coverUrl } from "../lib/assets";
 import { musicWorks, validateMusicWorks } from "./music";
 
 export { musicWorks } from "./music";
@@ -73,8 +74,8 @@ function makeEpisodes(
 }
 
 export const audioStories: Work[] = [
-  ...makeEpisodes("主角", protagonistBvids, protagonistDurations, "/covers/protagonist-editorial.png"),
-  ...makeEpisodes("命运", destinyBvids, destinyDurations, "/covers/destiny-editorial.png")
+  ...makeEpisodes("主角", protagonistBvids, protagonistDurations, coverUrl("protagonist-editorial.png")),
+  ...makeEpisodes("命运", destinyBvids, destinyDurations, coverUrl("destiny-editorial.png"))
 ];
 
 export const allWorks = [...musicWorks, ...audioStories];

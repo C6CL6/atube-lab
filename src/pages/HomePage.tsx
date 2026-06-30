@@ -7,6 +7,7 @@ import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { audioStories, musicWorks } from "../data/works";
 import { notes } from "../data/notes";
+import { coverUrl } from "../lib/assets";
 import type { Work } from "../types/work";
 
 const favoriteMusicWorks = [
@@ -41,7 +42,7 @@ export function HomePage() {
             </div>
           </div>
           <button className="hero-feature" onClick={() => setActiveWork(featured)}>
-            <img src="/covers/gui-zhen-featured.png" alt="" />
+            <img src={coverUrl("gui-zhen-featured.png")} alt="" />
             <span className="hero-feature__veil" />
             <span className="hero-feature__content">
               <small>本期推荐 · 原创 AI 歌曲</small>
@@ -59,7 +60,7 @@ export function HomePage() {
             </header>
             <div className="story-grid">
               <Link className="story-panel" to="/series/protagonist">
-                <img src="/covers/protagonist-editorial.png" alt="" />
+                <img src={coverUrl("protagonist-editorial.png")} alt="" />
                 <span className="story-panel__shade" />
                 <span className="story-panel__content">
                   <small>持续更新 · {audioStories.filter((work) => work.series === "主角").length} 集</small>
@@ -69,7 +70,7 @@ export function HomePage() {
                 </span>
               </Link>
               <Link className="story-panel" to="/series/destiny">
-                <img src="/covers/destiny-editorial.png" alt="" />
+                <img src={coverUrl("destiny-editorial.png")} alt="" />
                 <span className="story-panel__shade" />
                 <span className="story-panel__content">
                   <small>已完结 · {audioStories.filter((work) => work.series === "命运").length} 集</small>
@@ -90,7 +91,7 @@ export function HomePage() {
           </header>
           <div className="home-music-grid">
             <Link className="music-topic-panel" to="/music">
-              <img src="/covers/ai-songs-editorial.png" alt="" />
+              <img src={coverUrl("ai-songs-editorial.png")} alt="" />
               <span className="story-panel__shade" />
               <span className="story-panel__content">
                 <small>持续更新 · {musicWorks.length} 首</small>

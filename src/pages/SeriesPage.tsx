@@ -7,6 +7,7 @@ import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { audioStories } from "../data/works";
 import { getBilibiliVideoUrl } from "../lib/bilibili";
+import { coverUrl } from "../lib/assets";
 import type { Work } from "../types/work";
 
 const seriesInfo = {
@@ -15,7 +16,7 @@ const seriesInfo = {
     author: "陈彦",
     status: "持续更新",
     award: "第十届茅盾文学奖获奖小说",
-    cover: "/covers/protagonist-editorial.png",
+    cover: coverUrl("protagonist-editorial.png"),
     summary: "从秦腔舞台与个人命运出发，观察一个普通人如何在时代、艺术与自我之间成为自己的主角。"
   },
   destiny: {
@@ -23,7 +24,7 @@ const seriesInfo = {
     author: "蔡崇达",
     status: "已完结",
     award: "茅盾文学奖入围小说",
-    cover: "/covers/destiny-editorial.png",
+    cover: coverUrl("destiny-editorial.png"),
     summary: "沿着故乡、家族与生命经验展开，在声音中重访人与命运彼此塑造的路径。"
   }
 };
