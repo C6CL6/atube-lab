@@ -13,7 +13,7 @@ type StoredRecord = {
   failed: boolean
 }
 
-const records = new Map<string, StoredRecord>()
+const records = new Map<string, unknown>()
 
 vi.mock('@netlify/blobs', () => ({
   getStore: () => ({
@@ -27,7 +27,7 @@ vi.mock('@netlify/blobs', () => ({
       if (!value) return null
       return options?.type === 'json' ? value : JSON.stringify(value)
     },
-    setJSON: async (key: string, value: StoredRecord) => {
+    setJSON: async (key: string, value: unknown) => {
       records.set(key, value)
     },
   }),
@@ -83,8 +83,8 @@ describe('/api/sudoku/records', () => {
 
     expect(firstResponse.status).toBe(201)
     expect(secondResponse.status).toBe(201)
-    expect(records.get('records/same-name-1.json')?.username).toBe('阿土伯')
-    expect(records.get('records/same-name-2.json')?.completedAt).toBe('2026-06-25T09:05:00.000Z')
+    expect((records.get('records/same-name-1.json') as StoredRecord | undefined)?.username).toBe('阿土伯')
+    expect((records.get('records/same-name-2.json') as StoredRecord | undefined)?.completedAt).toBe('2026-06-25T09:05:00.000Z')
   })
 
   it('POST 拒绝缺少用户名的成绩', async () => {
@@ -104,5 +104,56 @@ describe('/api/sudoku/records', () => {
     expect(response.status).toBe(204)
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST')
+  })
+
+  it('同一设备北京时间同一天最多只能开始6局数独', async () => {
+    for (let index = 1; index <= 6; index += 1) {
+      const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          deviceId: 'device-aaaaaaaaaaaaaaaa',
+          startedAt: `2026-06-25T0${index}:00:00.000Z`,
+        }),
+      }))
+      const body = await response.json() as { remaining: number }
+
+      expect(response.status).toBe(201)
+      expect(body.remaining).toBe(6 - index)
+    }
+
+    const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({
+        deviceId: 'device-aaaaaaaaaaaaaaaa',
+        startedAt: '2026-06-25T07:00:00.000Z',
+      }),
+    }))
+    const body = await response.json() as { error: string; remaining: number }
+
+    expect(response.status).toBe(429)
+    expect(body.error).toBe('已经超过一天的限制了，请明天再玩')
+    expect(body.remaining).toBe(0)
+  })
+
+  it('数独防沉迷按北京时间自然日重置', async () => {
+    for (let index = 1; index <= 6; index += 1) {
+      await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          deviceId: 'device-aaaaaaaaaaaaaaaa',
+          startedAt: `2026-06-25T0${index}:00:00.000Z`,
+        }),
+      }))
+    }
+
+    const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({
+        deviceId: 'device-aaaaaaaaaaaaaaaa',
+        startedAt: '2026-06-25T16:30:00.000Z',
+      }),
+    }))
+
+    expect(response.status).toBe(201)
   })
 })

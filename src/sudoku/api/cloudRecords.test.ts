@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { GameRecord } from '../domain/types'
-import { fetchCloudRecords, getCloudRecordsEndpoint, submitCloudRecord } from './cloudRecords'
+import { fetchCloudRecords, getCloudRecordsEndpoint, getPlaySessionsEndpoint, startCloudPlaySession, submitCloudRecord } from './cloudRecords'
 
 function makeRecord(score: number): GameRecord {
   return {
@@ -38,6 +38,8 @@ describe('云端成绩客户端', () => {
     expect(getCloudRecordsEndpoint('localhost')).toBe('https://atube-lab.netlify.app/api/sudoku/records')
     expect(getCloudRecordsEndpoint('atube-inspiration-lab.netlify.app')).toBe('https://atube-lab.netlify.app/api/sudoku/records')
     expect(getCloudRecordsEndpoint('atube-lab.netlify.app')).toBe('/api/sudoku/records')
+    expect(getPlaySessionsEndpoint('localhost')).toBe('https://atube-lab.netlify.app/api/sudoku/play-sessions')
+    expect(getPlaySessionsEndpoint('atube-lab.netlify.app')).toBe('/api/sudoku/play-sessions')
   })
 
   it('云端不可用时返回安全降级状态', async () => {
@@ -62,5 +64,17 @@ describe('云端成绩客户端', () => {
     vi.spyOn(window, 'fetch').mockResolvedValue(new Response('bad gateway', { status: 502 }))
 
     await expect(submitCloudRecord(makeRecord(1200))).resolves.toEqual({ ok: false })
+  })
+
+  it('开局超过每日限制时返回后端提示', async () => {
+    vi.spyOn(window, 'fetch').mockResolvedValue(new Response(
+      JSON.stringify({ error: '已经超过一天的限制了，请明天再玩' }),
+      { status: 429 },
+    ))
+
+    await expect(startCloudPlaySession('device-1234567890')).resolves.toEqual({
+      ok: false,
+      message: '已经超过一天的限制了，请明天再玩',
+    })
   })
 })

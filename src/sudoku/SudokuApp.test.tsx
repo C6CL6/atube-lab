@@ -131,7 +131,45 @@ describe('数独应用记录成绩', () => {
     await userAction.click(screen.getByRole('button', { name: '极简棋盘 清爽线框，更接近原来的界面' }))
     await userAction.click(screen.getByRole('button', { name: '新手 轻松热身' }))
 
+    await waitFor(() => {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AppData
+      expect(saved.games['user-1']).toBeDefined()
+    })
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AppData
     expect(saved.games['user-1'].boardStyle).toBe('minimal')
+  })
+
+  it('第7局被防沉迷限制时提示明天再玩并阻止开局', async () => {
+    const user: UserProfile = {
+      id: 'user-1',
+      name: '阿土伯',
+      avatarColor: '#913f30',
+      createdAt: '2026-06-25T00:00:00.000Z',
+    }
+    const data: AppData = {
+      version: 1,
+      users: [user],
+      activeUserId: user.id,
+      games: {},
+      records: [],
+      lastDifficulty: 'easy',
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input)
+      if (init?.method === 'POST' && url.includes('/api/sudoku/play-sessions')) {
+        return new Response(JSON.stringify({ error: '已经超过一天的限制了，请明天再玩' }), { status: 429 })
+      }
+      return new Response(JSON.stringify({ records: [] }), { status: 200 })
+    })
+    const userAction = userEvent.setup()
+
+    render(<SudokuApp gameWindowMode />)
+
+    await userAction.click(screen.getByRole('button', { name: '新手 轻松热身' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('已经超过一天的限制了，请明天再玩')
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AppData
+    expect(saved.games['user-1']).toBeUndefined()
   })
 })

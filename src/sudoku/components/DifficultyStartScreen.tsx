@@ -8,6 +8,8 @@ type Props = {
   onSelect: (difficulty: Difficulty, boardStyle: BoardStyle) => void
   onSwitchUser: () => void
   onShowRanking: () => void
+  limitMessage?: string
+  disabled?: boolean
 }
 
 const OPTIONS: Array<{ difficulty: Difficulty; title: string; description: string }> = [
@@ -21,7 +23,7 @@ const STYLE_OPTIONS: Array<{ style: BoardStyle; title: string; description: stri
   { style: 'minimal', title: '极简棋盘', description: '清爽线框，更接近原来的界面' },
 ]
 
-export function DifficultyStartScreen({ user, defaultBoardStyle = 'decorative', onSelect, onSwitchUser, onShowRanking }: Props) {
+export function DifficultyStartScreen({ user, defaultBoardStyle = 'decorative', onSelect, onSwitchUser, onShowRanking, limitMessage, disabled = false }: Props) {
   const [boardStyle, setBoardStyle] = useState<BoardStyle>(defaultBoardStyle)
 
   return (
@@ -31,6 +33,7 @@ export function DifficultyStartScreen({ user, defaultBoardStyle = 'decorative', 
         <p className="eyebrow">欢迎，{user.name}</p>
         <h1>选择游戏界面与难度</h1>
         <p className="lead">先选喜欢的棋盘界面，再选择本局难度。</p>
+        {limitMessage ? <p className="form-error" role="alert">{limitMessage}</p> : null}
         <section className="board-style-picker" aria-label="选择棋盘界面">
           {STYLE_OPTIONS.map((option) => (
             <button
@@ -38,6 +41,7 @@ export function DifficultyStartScreen({ user, defaultBoardStyle = 'decorative', 
               className={boardStyle === option.style ? 'is-selected' : ''}
               onClick={() => setBoardStyle(option.style)}
               aria-pressed={boardStyle === option.style}
+              disabled={disabled}
             >
               <strong>{option.title}</strong>
               <span>{option.description}</span>
@@ -46,7 +50,7 @@ export function DifficultyStartScreen({ user, defaultBoardStyle = 'decorative', 
         </section>
         <div className="start-difficulty-grid">
           {OPTIONS.map((option) => (
-            <button key={option.difficulty} onClick={() => onSelect(option.difficulty, boardStyle)}>
+            <button key={option.difficulty} onClick={() => onSelect(option.difficulty, boardStyle)} disabled={disabled}>
               <strong>{option.title}</strong>
               <span>{option.description}</span>
             </button>

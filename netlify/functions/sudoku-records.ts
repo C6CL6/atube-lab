@@ -16,8 +16,17 @@ type CloudRecord = {
   failed: boolean
 }
 
+type PlaySession = {
+  id: string
+  deviceId: string
+  day: string
+  startedAt: string
+}
+
 const RECORD_PREFIX = 'records/'
+const PLAY_SESSION_PREFIX = 'play-sessions/'
 const RANKING_LIMIT = 10
+const DAILY_PLAY_LIMIT = 6
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -89,6 +98,25 @@ function recordKey(id: string) {
   return `${RECORD_PREFIX}${encodeURIComponent(id)}.json`
 }
 
+function playSessionPrefix(deviceId: string, day: string) {
+  return `${PLAY_SESSION_PREFIX}${encodeURIComponent(deviceId)}/${day}/`
+}
+
+function playSessionKey(session: PlaySession) {
+  return `${playSessionPrefix(session.deviceId, session.day)}${encodeURIComponent(session.id)}.json`
+}
+
+function beijingDay(value: string) {
+  const date = new Date(value)
+  return new Date(date.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
+
+function normalizeDeviceId(value: unknown) {
+  if (typeof value !== 'string') return ''
+  const deviceId = value.trim()
+  return deviceId.length >= 16 && deviceId.length <= 128 ? deviceId : ''
+}
+
 async function loadRecords() {
   const store = getStore({ name: 'sudoku-records', consistency: 'strong' })
   const { blobs } = await store.list({ prefix: RECORD_PREFIX })
@@ -98,10 +126,48 @@ async function loadRecords() {
   return records.filter((record): record is CloudRecord => Boolean(record))
 }
 
+async function createPlaySession(input: unknown) {
+  if (!input || typeof input !== 'object') return json({ error: '缺少设备信息，无法开始游戏' }, 400)
+  const body = input as { deviceId?: unknown; startedAt?: unknown }
+  const deviceId = normalizeDeviceId(body.deviceId)
+  const startedAt = typeof body.startedAt === 'string' && isIsoDate(body.startedAt) ? body.startedAt : new Date().toISOString()
+  if (!deviceId) return json({ error: '缺少设备信息，无法开始游戏' }, 400)
+
+  const day = beijingDay(startedAt)
+  const store = getStore({ name: 'sudoku-records', consistency: 'strong' })
+  const prefix = playSessionPrefix(deviceId, day)
+  const { blobs } = await store.list({ prefix })
+  const played = blobs.length
+  if (played >= DAILY_PLAY_LIMIT) {
+    return json({
+      error: '已经超过一天的限制了，请明天再玩',
+      limit: DAILY_PLAY_LIMIT,
+      remaining: 0,
+    }, 429)
+  }
+
+  const session: PlaySession = {
+    id: crypto.randomUUID(),
+    deviceId,
+    day,
+    startedAt,
+  }
+  await store.setJSON(playSessionKey(session), session)
+  return json({ session, limit: DAILY_PLAY_LIMIT, remaining: DAILY_PLAY_LIMIT - played - 1 }, 201)
+}
+
 export default async (req: Request) => {
   try {
     if (req.method === 'OPTIONS') {
       return empty()
+    }
+
+    const url = new URL(req.url)
+    if (url.pathname === '/api/sudoku/play-sessions') {
+      if (req.method === 'POST') {
+        return createPlaySession(await req.json().catch(() => null))
+      }
+      return json({ error: 'Method not allowed' }, 405)
     }
 
     if (req.method === 'GET') {
@@ -124,5 +190,5 @@ export default async (req: Request) => {
 }
 
 export const config: Config = {
-  path: '/api/sudoku/records',
+  path: ['/api/sudoku/records', '/api/sudoku/play-sessions'],
 }

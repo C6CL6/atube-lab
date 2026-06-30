@@ -3,7 +3,7 @@ import { GameScreen } from './components/GameScreen'
 import { DifficultyStartScreen } from './components/DifficultyStartScreen'
 import { LoginScreen } from './components/LoginScreen'
 import { RankingModal } from './components/RankingModal'
-import { fetchCloudRecords, submitCloudRecord } from './api/cloudRecords'
+import { fetchCloudRecords, startCloudPlaySession, submitCloudRecord } from './api/cloudRecords'
 import { rankRecords, topRankingRecords } from './domain/ranking'
 import type { AppData, BoardStyle, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
@@ -16,12 +16,24 @@ type Props = {
   onReturnHome?: () => void
 }
 
+const DEVICE_ID_KEY = 'atube-sudoku-device-id'
+
+function getSudokuDeviceId() {
+  const existing = localStorage.getItem(DEVICE_ID_KEY)
+  if (existing) return existing
+  const id = crypto.randomUUID()
+  localStorage.setItem(DEVICE_ID_KEY, id)
+  return id
+}
+
 export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingChange, onReturnHome }: Props = {}) {
   const [data, setData] = useState<AppData>(() => loadAppData())
   const [showRanking, setShowRanking] = useState(false)
   const [playInCurrentWindow, setPlayInCurrentWindow] = useState(gameWindowMode)
   const [cloudRecords, setCloudRecords] = useState<GameRecord[] | null>(null)
   const [cloudUnavailable, setCloudUnavailable] = useState(false)
+  const [limitMessage, setLimitMessage] = useState('')
+  const [startingGame, setStartingGame] = useState(false)
   const activeUser = data.users.find((user) => user.id === data.activeUserId)
   const currentGame = activeUser ? data.games[activeUser.id] : undefined
 
@@ -118,19 +130,31 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   }
 
   const newGame = (difficulty: Difficulty, boardStyle: BoardStyle = data.lastBoardStyle ?? 'decorative') => {
-    const next = {
-      ...data,
-      lastDifficulty: difficulty,
-      lastBoardStyle: boardStyle,
-      games: { ...data.games, [activeUser.id]: createGame(difficulty, boardStyle) },
-    }
-    persist(next)
-    if (gameWindowMode) {
-      setPlayInCurrentWindow(true)
-      return
-    }
-    const opened = onOpenGameWindow?.() ?? false
-    setPlayInCurrentWindow(!opened)
+    if (startingGame) return
+    setStartingGame(true)
+    setLimitMessage('')
+    void startCloudPlaySession(getSudokuDeviceId()).then((result) => {
+      if (!result.ok) {
+        const message = result.message ?? '已经超过一天的限制了，请明天再玩'
+        setLimitMessage(message)
+        if (currentGame) window.alert(message)
+        return
+      }
+
+      const next = {
+        ...data,
+        lastDifficulty: difficulty,
+        lastBoardStyle: boardStyle,
+        games: { ...data.games, [activeUser.id]: createGame(difficulty, boardStyle) },
+      }
+      persist(next)
+      if (gameWindowMode) {
+        setPlayInCurrentWindow(true)
+        return
+      }
+      const opened = onOpenGameWindow?.() ?? false
+      setPlayInCurrentWindow(!opened)
+    }).finally(() => setStartingGame(false))
   }
 
   if (!currentGame || !playInCurrentWindow) {
@@ -142,6 +166,8 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
           onSelect={newGame}
           onSwitchUser={() => persist({ ...data, activeUserId: null })}
           onShowRanking={() => setShowRanking(true)}
+          limitMessage={limitMessage}
+          disabled={startingGame}
         />
         {showRanking ? (
           <RankingModal
