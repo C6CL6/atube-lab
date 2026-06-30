@@ -28,16 +28,18 @@ describe('云端成绩客户端', () => {
 
     await expect(fetchCloudRecords()).resolves.toEqual({ records, unavailable: false })
     expect(window.fetch).toHaveBeenCalledWith(
-      'https://atube-lab.netlify.app/api/sudoku/records',
+      'https://atube.ccwu.cc/api/sudoku/records',
       { headers: { Accept: 'application/json' } },
     )
   })
 
   it('本地开发地址使用正式云端接口，方便跨设备测试成绩', () => {
-    expect(getCloudRecordsEndpoint('127.0.0.1')).toBe('https://atube-lab.netlify.app/api/sudoku/records')
-    expect(getCloudRecordsEndpoint('localhost')).toBe('https://atube-lab.netlify.app/api/sudoku/records')
-    expect(getCloudRecordsEndpoint('atube-inspiration-lab.netlify.app')).toBe('https://atube-lab.netlify.app/api/sudoku/records')
-    expect(getCloudRecordsEndpoint('atube-lab.netlify.app')).toBe('/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('127.0.0.1')).toBe('https://atube.ccwu.cc/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('localhost')).toBe('https://atube.ccwu.cc/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('atube-inspiration-lab.netlify.app')).toBe('https://atube.ccwu.cc/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('atube-lab.netlify.app')).toBe('https://atube.ccwu.cc/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('c6cl6.github.io')).toBe('https://atube.ccwu.cc/api/sudoku/records')
+    expect(getCloudRecordsEndpoint('atube.ccwu.cc')).toBe('/api/sudoku/records')
   })
 
   it('云端不可用时返回安全降级状态', async () => {
@@ -51,7 +53,7 @@ describe('云端成绩客户端', () => {
     vi.spyOn(window, 'fetch').mockResolvedValue(new Response(JSON.stringify({ record }), { status: 201 }))
 
     await expect(submitCloudRecord(record)).resolves.toEqual({ ok: true })
-    expect(window.fetch).toHaveBeenCalledWith('https://atube-lab.netlify.app/api/sudoku/records', {
+    expect(window.fetch).toHaveBeenCalledWith('https://atube.ccwu.cc/api/sudoku/records', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(record),
