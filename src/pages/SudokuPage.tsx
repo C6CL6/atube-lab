@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
+import { appRouteUrl } from "../lib/assets";
 import { SudokuApp } from "../sudoku/SudokuApp";
 import { loadAppData } from "../sudoku/storage/storage";
 import "../sudoku/styles.css";
@@ -23,7 +24,7 @@ export function SudokuPage() {
 
   const openGameWindow = () => {
     const popup = window.open(
-      "/sudoku?window=game",
+      appRouteUrl("/sudoku?window=game"),
       "atube-sudoku-game",
       "popup=yes,width=980,height=760,left=80,top=40,resizable=yes,scrollbars=no",
     );
