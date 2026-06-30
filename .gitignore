@@ -17,3 +17,8 @@ vite.config.d.ts
 
 # Local learning videos (do not upload)
 学习资料/*.mp4
+
+# Local project folders kept under atube-lab, not deployed with the website
+/主角/
+/数独/
+/掼蛋/
