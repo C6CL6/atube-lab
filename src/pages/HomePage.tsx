@@ -142,6 +142,21 @@ export function HomePage() {
           </div>
         </section>
 
+        <section className="snake-entry">
+          <div className="page-shell snake-entry__inner">
+            <div>
+              <p className="eyeline">ARCADE GAME</p>
+              <h2>贪吃蛇</h2>
+              <p>
+                从桌面版移植到网页的经典小游戏：键盘控制、速度递进、浏览器本机最高分。
+              </p>
+            </div>
+            <Link className="button button--ghost" to="/snake">
+              进入贪吃蛇 <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
         <section className="section section--notes" id="notes">
           <div className="page-shell notes-layout">
             <div className="notes-intro">

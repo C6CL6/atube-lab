@@ -6,6 +6,7 @@ import { MusicPage } from "./pages/MusicPage";
 import { NotePage } from "./pages/NotePage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { SudokuPage } from "./pages/SudokuPage";
+import { SnakePage } from "./pages/SnakePage";
 
 function ScrollManager() {
   const location = useLocation();
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/learning" element={<LearningPage />} />
         <Route path="/music" element={<MusicPage />} />
         <Route path="/sudoku" element={<SudokuPage />} />
+        <Route path="/snake" element={<SnakePage />} />
         <Route path="/guandan" element={<Navigate to="/" replace />} />
         <Route path="/series/:slug" element={<SeriesPage />} />
         <Route path="/notes/:slug" element={<NotePage />} />

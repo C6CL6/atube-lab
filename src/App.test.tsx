@@ -21,6 +21,29 @@ describe("官网路由", () => {
     expect(screen.getAllByText("A-tube的灵感实验室").length).toBeGreaterThan(0);
   });
 
+  it("可以通过 /snake 打开贪吃蛇游戏页面", () => {
+    render(
+      <MemoryRouter initialEntries={["/snake"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "贪吃蛇" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "开始游戏" })).toBeInTheDocument();
+    expect(screen.getByText("最高分 0")).toBeInTheDocument();
+  });
+
+  it("首页提供贪吃蛇游戏入口", () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "贪吃蛇" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /进入贪吃蛇/ })).toHaveAttribute("href", "/snake");
+  });
+
   it("临时访问 /guandan 时回到首页基准内容", () => {
     render(
       <MemoryRouter initialEntries={["/guandan"]}>
