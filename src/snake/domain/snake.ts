@@ -16,6 +16,8 @@ export type SnakeGameState = {
   speedLevel: number;
   isGameOver: boolean;
   seed: number;
+  startedAt: string;
+  recorded: boolean;
 };
 
 const DEFAULT_WIDTH = 28;
@@ -85,6 +87,8 @@ export function createSnakeGame(options: { seed?: number } = {}): SnakeGameState
     speedLevel: 1,
     isGameOver: seededFood.isGameOver,
     seed: seededFood.seed,
+    startedAt: new Date().toISOString(),
+    recorded: false,
   };
 }
 
@@ -138,5 +142,5 @@ export function stepSnakeGame(game: SnakeGameState): SnakeGameState {
 }
 
 export function frameDelayMs(speedLevel: number) {
-  return Math.max(70, 150 - (speedLevel - 1) * 12);
+  return Math.max(110, 240 - (speedLevel - 1) * 18);
 }

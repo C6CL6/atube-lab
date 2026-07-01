@@ -28,9 +28,9 @@ describe("官网路由", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: "贪吃蛇" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "选择玩家" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "开始游戏" })).toBeInTheDocument();
-    expect(screen.getByText("最高分 0")).toBeInTheDocument();
+    expect(screen.getByLabelText("用户名")).toBeInTheDocument();
   });
 
   it("首页提供贪吃蛇游戏入口", () => {

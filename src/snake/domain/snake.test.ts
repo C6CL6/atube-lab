@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changeDirection, createSnakeGame, stepSnakeGame } from "./snake";
+import { changeDirection, createSnakeGame, frameDelayMs, stepSnakeGame } from "./snake";
 
 describe("贪吃蛇规则", () => {
   it("按桌面版尺寸和初始蛇身开局", () => {
@@ -62,5 +62,11 @@ describe("贪吃蛇规则", () => {
 
     expect(next.isGameOver).toBe(true);
     expect(next.snake).toEqual(game.snake);
+  });
+
+  it("起步速度比桌面版更慢，并随等级逐步加快", () => {
+    expect(frameDelayMs(1)).toBe(240);
+    expect(frameDelayMs(2)).toBeLessThan(frameDelayMs(1));
+    expect(frameDelayMs(8)).toBeGreaterThanOrEqual(110);
   });
 });
