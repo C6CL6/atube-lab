@@ -1,4 +1,4 @@
-import { Pause, Play, RefreshCw, Trophy } from "lucide-react";
+import { LogOut, Pause, Play, RefreshCw, Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { fetchSnakeCloudRecords, submitSnakeCloudRecord } from "./api/cloudRecords";
 import {
@@ -290,6 +290,7 @@ export function SnakeApp() {
   }, [activeUser, game, refreshCloudRecords, skin]);
 
   const statusText = game.isGameOver ? "游戏结束" : paused ? "已暂停" : running ? "进行中" : "准备开始";
+  const homeHref = import.meta.env.BASE_URL || "/";
 
   if (!activeUser) {
     return (
@@ -337,8 +338,46 @@ export function SnakeApp() {
 
   return (
     <section className={`snake-shell snake-shell--${skin}`} aria-labelledby="snake-title">
+      <header className="snake-topbar">
+        <a className="snake-exit" href={homeHref} aria-label="退出贪吃蛇并返回首页">
+          <LogOut size={16} />
+          退出
+        </a>
+        <div className="snake-title-block">
+          <p className="snake-brand">A-tube Lab</p>
+          <h1 id="snake-title">贪吃蛇</h1>
+        </div>
+        <div className="snake-player-row">
+          <span className="snake-player-avatar" style={{ background: activeUser.avatarColor }}>{activeUser.name.slice(0, 1)}</span>
+          <strong>{activeUser.name}</strong>
+        </div>
+      </header>
+
       <div className="snake-stage">
-        <div className="snake-board-wrap">
+        <aside className="snake-side snake-side--status" aria-label="贪吃蛇状态">
+          <div className="snake-score-grid">
+            <div>
+              <span>本局</span>
+              <strong>{game.score}</strong>
+            </div>
+            <div>
+              <span>最高</span>
+              <strong>{highScore}</strong>
+            </div>
+            <div>
+              <span>速度</span>
+              <strong>{game.speedLevel}</strong>
+            </div>
+            <div>
+              <span>状态</span>
+              <strong>{statusText}</strong>
+            </div>
+          </div>
+
+          <p className="snake-high-score">最高分 {highScore}</p>
+        </aside>
+
+        <main className="snake-board-wrap">
           <div
             className="snake-board"
             role="grid"
@@ -369,39 +408,9 @@ export function SnakeApp() {
               );
             })}
           </div>
-        </div>
+        </main>
 
-        <aside className="snake-panel" aria-label="贪吃蛇状态">
-          <p className="snake-brand">A-tube Lab</p>
-          <h1 id="snake-title">贪吃蛇</h1>
-          <div className="snake-player-row">
-            <span className="snake-player-avatar" style={{ background: activeUser.avatarColor }}>{activeUser.name.slice(0, 1)}</span>
-            <strong>{activeUser.name}</strong>
-            <button onClick={switchUser}>切换玩家</button>
-          </div>
-          <p className="snake-intro">经典耐玩版，吃到红色食物得分，速度会随分数提升。</p>
-
-          <div className="snake-score-grid">
-            <div>
-              <span>本局得分</span>
-              <strong>{game.score}</strong>
-            </div>
-            <div>
-              <span>最高分</span>
-              <strong>{highScore}</strong>
-            </div>
-            <div>
-              <span>速度</span>
-              <strong>{game.speedLevel}</strong>
-            </div>
-            <div>
-              <span>状态</span>
-              <strong>{statusText}</strong>
-            </div>
-          </div>
-
-          <p className="snake-high-score">最高分 {highScore}</p>
-
+        <aside className="snake-side snake-side--controls" aria-label="贪吃蛇操作">
           <div className="snake-actions">
             <button className="button button--primary" onClick={running ? togglePause : start}>
               {running && !paused ? <Pause size={17} /> : <Play size={17} fill="currentColor" />}
@@ -417,6 +426,16 @@ export function SnakeApp() {
             </button>
           </div>
 
+          <div className="snake-controls-label">方向控制</div>
+          <div className="snake-controls" aria-label="方向控制">
+            <button aria-label="向上" onClick={() => move("up")}>↑</button>
+            <button aria-label="向左" onClick={() => move("left")}>←</button>
+            <button aria-label="向下" onClick={() => move("down")}>↓</button>
+            <button aria-label="向右" onClick={() => move("right")}>→</button>
+          </div>
+        </aside>
+
+        <section className="snake-side snake-side--settings" aria-label="贪吃蛇设置">
           <fieldset className="snake-skins" aria-label="游戏皮肤">
             <legend>游戏皮肤</legend>
             {snakeSkins.map((item) => (
@@ -434,15 +453,12 @@ export function SnakeApp() {
             ))}
           </fieldset>
 
-          <div className="snake-controls" aria-label="方向控制">
-            <button aria-label="向上" onClick={() => move("up")}>↑</button>
-            <button aria-label="向左" onClick={() => move("left")}>←</button>
-            <button aria-label="向下" onClick={() => move("down")}>↓</button>
-            <button aria-label="向右" onClick={() => move("right")}>→</button>
+          <div className="snake-player-tools">
+            <button onClick={switchUser}>切换玩家</button>
+            <p className="snake-help">经典耐玩版，吃到红色食物得分，速度会随分数提升。</p>
+            <p className="snake-help">方向键 / WASD 控制，Space 暂停，R 重开。</p>
           </div>
-
-          <p className="snake-help">方向键 / WASD 控制，Space 暂停，R 重开。</p>
-        </aside>
+        </section>
       </div>
       {showRanking ? (
         <SnakeRankingModal
