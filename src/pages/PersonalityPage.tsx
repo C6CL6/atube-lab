@@ -112,10 +112,7 @@ export function PersonalityPage() {
           <div>
             <p className="eyeline">PERSONALITY LAB</p>
             <h1>16型人格倾向测试</h1>
-            <p>
-              参考 MBTI 常见四维框架和经典问卷的测量方向设计，
-              适合自我观察、人物创作和沟通风格复盘。
-            </p>
+            <p>参考 MBTI 常见四维框架和经典问卷的测量方向设计，适合自我观察、人物创作和沟通风格复盘。</p>
           </div>
         </section>
 
