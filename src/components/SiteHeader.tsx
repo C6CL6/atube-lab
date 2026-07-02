@@ -7,6 +7,7 @@ const navItems = [
   ["AI音乐", "/music"],
   ["声音叙事", "/#stories"],
   ["AI学习", "/learning"],
+  ["性格测试", "/personality"],
   ["数独", "/sudoku"],
   ["贪吃蛇", "/snake"],
   ["创作手记", "/#notes"],

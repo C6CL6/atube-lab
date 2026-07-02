@@ -127,6 +127,21 @@ export function HomePage() {
           </div>
         </section>
 
+        <section className="personality-entry">
+          <div className="page-shell personality-entry__inner">
+            <div>
+              <p className="eyeline">PERSONALITY LAB</p>
+              <h2>16型人格倾向测试</h2>
+              <p>
+                60道中文题，参考四维人格框架观察能量来源、信息处理、决策方式和生活节奏。
+              </p>
+            </div>
+            <Link className="button button--primary" to="/personality">
+              进入性格测试 <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
         <section className="sudoku-entry">
           <div className="page-shell sudoku-entry__inner">
             <div>

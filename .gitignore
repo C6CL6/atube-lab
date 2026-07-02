@@ -1,6 +1,7 @@
 # Dependencies and local tools
 node_modules/
 .tools/
+.pnpm-store/
 
 # Build output and caches
 dist/

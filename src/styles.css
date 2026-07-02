@@ -321,6 +321,31 @@ button { color: inherit; }
 .learning-entry h2 { margin: 0; font-family: var(--serif); font-size: 2rem; }
 .learning-entry p:last-child { margin: 8px 0 0; color: var(--muted); }
 
+.personality-entry {
+  padding-block: 58px;
+  border-top: 1px solid rgba(42, 35, 30, 0.18);
+  background:
+    linear-gradient(135deg, rgba(247, 243, 235, 0.92), rgba(215, 203, 186, 0.86)),
+    #d8cdbd;
+}
+.personality-entry__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 32px;
+  align-items: center;
+}
+.personality-entry h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+.personality-entry p:last-child {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
 .sudoku-entry {
   padding-block: 58px;
   border-top: 1px solid rgba(42, 35, 30, 0.18);
@@ -579,7 +604,7 @@ button { color: inherit; }
   .music-directory-grid { grid-template-columns: 1fr; }
   .music-columns > div:last-child { grid-template-columns: 1fr; }
   .story-panel { min-height: 0; }
-  .learning-entry__inner, .learning-bilibili, .sudoku-entry__inner, .snake-entry__inner { grid-template-columns: 1fr; justify-items: start; }
+  .learning-entry__inner, .learning-bilibili, .personality-entry__inner, .sudoku-entry__inner, .snake-entry__inner { grid-template-columns: 1fr; justify-items: start; }
   .learning-resource { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; }
   .learning-resource__meta { flex-direction: row; }
   .site-footer { grid-template-columns: 1fr; padding: 46px 20px; }

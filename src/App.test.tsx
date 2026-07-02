@@ -44,6 +44,17 @@ describe("官网路由", () => {
     expect(screen.getByRole("link", { name: /进入贪吃蛇/ })).toHaveAttribute("href", "/snake");
   });
 
+  it("可以通过 /personality 打开性格测试页面，导航也提供入口", () => {
+    render(
+      <MemoryRouter initialEntries={["/personality"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "16型人格倾向测试" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "性格测试" })).toHaveAttribute("href", "/personality");
+  });
+
   it("临时访问 /guandan 时回到首页基准内容", () => {
     render(
       <MemoryRouter initialEntries={["/guandan"]}>
