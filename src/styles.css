@@ -311,6 +311,34 @@ button { color: inherit; }
 .note-row strong { font-family: var(--serif); font-size: 1.12rem; font-weight: 600; }
 .note-row:hover strong { color: var(--red); }
 
+.router-hero { padding-block: 92px; border-bottom: 1px solid var(--line); background: var(--ivory); }
+.router-hero__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .68fr); gap: clamp(36px, 7vw, 96px); align-items: center; }
+.router-hero h1, .router-download h2 { margin: 0; font-family: var(--serif); font-size: clamp(3rem, 6vw, 5.2rem); font-weight: 600; }
+.router-hero__intro { max-width: 600px; margin: 24px 0 30px; color: var(--muted); font-size: 1.05rem; line-height: 1.9; }
+.router-status { display: grid; gap: 14px; min-height: 260px; padding: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--ink); color: var(--ivory); align-content: end; }
+.router-status svg { color: #e5ad86; }
+.router-status strong { font-family: var(--serif); font-size: 2rem; font-weight: 600; }
+.router-status span { color: #c9bdb0; line-height: 1.7; }
+.router-feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.router-feature-grid article { min-height: 220px; padding: 28px; border-top: 2px solid var(--red); background: #e7ded0; }
+.router-feature-grid svg { color: var(--red); }
+.router-feature-grid h3 { margin: 22px 0 10px; font-family: var(--serif); font-size: 1.45rem; }
+.router-feature-grid p { margin: 0; color: var(--muted); line-height: 1.8; }
+.router-download { padding-block: 78px; background: var(--walnut); color: var(--ivory); }
+.router-download .eyeline { color: #e5ad86; }
+.router-download__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .8fr); gap: 48px; align-items: center; }
+.router-download h2 { font-size: clamp(2.4rem, 4.5vw, 4.2rem); }
+.router-download__inner > div > p:not(.eyeline) { margin: 18px 0 0; color: #d7cbc0; line-height: 1.8; }
+.router-download__details { display: grid; gap: 24px; justify-items: start; }
+.router-download__details .button { border-color: #e5ad86; background: #e5ad86; color: var(--ink); }
+.router-download__details p { display: grid; gap: 7px; margin: 0; color: #d7cbc0; font-size: .78rem; }
+.router-download__details code { max-width: 100%; overflow-wrap: anywhere; color: #f1e9e1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .73rem; line-height: 1.6; }
+
+.router-entry { padding-block: 58px; border-top: 1px solid var(--line); background: #d5c7b3; }
+.router-entry__inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: center; }
+.router-entry h2 { margin: 0; font-family: var(--serif); font-size: 2rem; }
+.router-entry p:last-of-type { max-width: 660px; margin: 12px 0 0; color: var(--muted); line-height: 1.8; }
+
 .learning-entry { padding-block: 54px; border-top: 1px solid var(--line); background: #d5c7b3; }
 .learning-entry__inner {
   display: grid;
@@ -518,7 +546,7 @@ button { color: inherit; }
   }
   .site-nav--open { display: flex; }
   .site-nav a { padding: 13px 0; }
-  .hero, .series-hero, .music-hero { grid-template-columns: 1fr; min-height: auto; padding-block: 56px; }
+  .hero, .series-hero, .music-hero, .router-hero__inner, .router-download__inner { grid-template-columns: 1fr; min-height: auto; padding-block: 56px; }
   .hero-feature { aspect-ratio: 16 / 11; }
   .featured-grid { grid-template-columns: 1fr 1fr; }
   .featured-grid .work-card--feature { grid-column: 1 / -1; }
@@ -549,7 +577,10 @@ button { color: inherit; }
   .music-directory-grid { grid-template-columns: 1fr; }
   .music-columns > div:last-child { grid-template-columns: 1fr; }
   .story-panel { min-height: 0; }
-  .learning-entry__inner, .learning-bilibili, .sudoku-entry__inner { grid-template-columns: 1fr; justify-items: start; }
+  .learning-entry__inner, .learning-bilibili, .sudoku-entry__inner, .router-entry__inner { grid-template-columns: 1fr; justify-items: start; }
+  .router-feature-grid { grid-template-columns: 1fr; }
+  .router-hero { padding-block: 56px; }
+  .router-download { padding-block: 62px; }
   .learning-resource { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; }
   .learning-resource__meta { flex-direction: row; }
   .site-footer { grid-template-columns: 1fr; padding: 46px 20px; }
