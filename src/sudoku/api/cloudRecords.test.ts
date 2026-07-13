@@ -104,4 +104,15 @@ describe('云端成绩客户端', () => {
       elapsedSeconds: 0,
     })).resolves.toEqual({ ok: false, unavailable: true, message: '防沉迷服务暂时不可用' })
   })
+
+  it('非防沉迷拒绝的接口错误也按服务不可用降级', async () => {
+    vi.spyOn(window, 'fetch').mockResolvedValue(new Response('not found', { status: 404 }))
+
+    await expect(syncCloudPlayLimit({
+      deviceId: 'device-1234567890',
+      action: 'start',
+      gameId: 'game-1',
+      elapsedSeconds: 0,
+    })).resolves.toEqual({ ok: false, unavailable: true, message: '防沉迷服务暂时不可用' })
+  })
 })

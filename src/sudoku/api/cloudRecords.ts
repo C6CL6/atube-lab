@@ -87,7 +87,7 @@ export async function syncCloudPlayLimit(request: PlayLimitRequest): Promise<Pla
         restSeconds: body.restSeconds,
       }
     }
-    if (response.status >= 500) {
+    if (response.status !== 429) {
       return { ok: false, unavailable: true, message: '防沉迷服务暂时不可用' }
     }
     return {

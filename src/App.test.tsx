@@ -91,6 +91,10 @@ describe("官网路由", () => {
   it("点击难度开始正式游戏时打开可缩放游戏窗口", async () => {
     const focus = vi.fn();
     const open = vi.spyOn(window, "open").mockReturnValue({ focus } as unknown as Window);
+    vi.spyOn(window, "fetch").mockResolvedValue(new Response(
+      JSON.stringify({ activeSeconds: 0, remainingSeconds: 7200 }),
+      { status: 200 },
+    ));
     const user = {
       id: "user-1",
       name: "阿土伯",
