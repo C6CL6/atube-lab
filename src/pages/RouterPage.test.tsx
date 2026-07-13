@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { RouterPage } from "./RouterPage";
@@ -46,9 +46,13 @@ describe("Mac OS软路由页面", () => {
     );
 
     expect(screen.getByRole("heading", { name: "看看它如何管理家庭网络" })).toBeInTheDocument();
-    expect(screen.getByAltText("Mac OS软路由仪表盘与运行状态")).toHaveAttribute("src", "/images/router/dashboard.png");
-    expect(screen.getByAltText("Mac OS软路由网络拓扑图")).toHaveAttribute("src", "/images/router/topology.png");
-    expect(screen.getByAltText("Mac OS软路由设备管理列表")).toHaveAttribute("src", "/images/router/devices.png");
-    expect(screen.getByAltText("Mac OS软路由启动与自动启动控制")).toHaveAttribute("src", "/images/router/controls.png");
+    expect(screen.getByRole("button", { name: "放大查看：Mac OS软路由仪表盘与运行状态" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "放大查看：Mac OS软路由网络拓扑图" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "放大查看：Mac OS软路由设备管理列表" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "放大查看：Mac OS软路由启动与自动启动控制" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "放大查看：Mac OS软路由仪表盘与运行状态" }));
+    expect(screen.getByRole("dialog", { name: "Mac OS软路由仪表盘与运行状态预览" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "关闭预览" })).toBeInTheDocument();
   });
 });

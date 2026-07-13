@@ -1,10 +1,19 @@
-import { Activity, Download, Network, Power, Settings2, ShieldCheck, Wifi } from "lucide-react";
+import { useState } from "react";
+import { Activity, Download, Network, Power, Settings2, ShieldCheck, Wifi, X } from "lucide-react";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 
 const checksum = "c73338010ba9cbd1d0d3dd60c074365598fb61458a651c3ea0139cc66d4f81fd";
+const screenshots = [
+  { src: "/images/router/dashboard.png", alt: "Mac OS软路由仪表盘与运行状态", title: "运行仪表盘", description: "VPN 出口、内网地址、流量与经过网关的设备一目了然。" },
+  { src: "/images/router/topology.png", alt: "Mac OS软路由网络拓扑图", title: "网络拓扑", description: "直观看到设备、内网、转发、VPN 与互联网之间的路径。" },
+  { src: "/images/router/devices.png", alt: "Mac OS软路由设备管理列表", title: "设备管理", description: "区分已接入网关和仅在局域网可见的设备，便于逐台核对。" },
+  { src: "/images/router/controls.png", alt: "Mac OS软路由启动与自动启动控制", title: "操作控制", description: "随时启动、停止软路由，并按需设置开机自启。" },
+] as const;
 
 export function RouterPage() {
+  const [activeScreenshot, setActiveScreenshot] = useState<(typeof screenshots)[number] | null>(null);
+
   return (
     <>
       <SiteHeader />
@@ -60,25 +69,28 @@ export function RouterPage() {
               <p>从运行状态、网络路径到设备与控制项，所有关键信息都集中在同一个 macOS 应用中。</p>
             </header>
             <div className="router-showcase__grid">
-              <figure className="router-showcase__item router-showcase__item--wide">
-                <img src="/images/router/dashboard.png" alt="Mac OS软路由仪表盘与运行状态" />
-                <figcaption><strong>运行仪表盘</strong><span>VPN 出口、内网地址、流量与经过网关的设备一目了然。</span></figcaption>
-              </figure>
-              <figure className="router-showcase__item">
-                <img src="/images/router/topology.png" alt="Mac OS软路由网络拓扑图" loading="lazy" />
-                <figcaption><strong>网络拓扑</strong><span>直观看到设备、内网、转发、VPN 与互联网之间的路径。</span></figcaption>
-              </figure>
-              <figure className="router-showcase__item">
-                <img src="/images/router/devices.png" alt="Mac OS软路由设备管理列表" loading="lazy" />
-                <figcaption><strong>设备管理</strong><span>区分已接入网关和仅在局域网可见的设备，便于逐台核对。</span></figcaption>
-              </figure>
-              <figure className="router-showcase__item">
-                <img src="/images/router/controls.png" alt="Mac OS软路由启动与自动启动控制" loading="lazy" />
-                <figcaption><strong>操作控制</strong><span>随时启动、停止软路由，并按需设置开机自启。</span></figcaption>
-              </figure>
+              {screenshots.map((screenshot) => (
+                <figure className="router-showcase__item" key={screenshot.src}>
+                  <button className="router-showcase__trigger" type="button" aria-label={`放大查看：${screenshot.alt}`} onClick={() => setActiveScreenshot(screenshot)}>
+                    <img src={screenshot.src} alt={screenshot.alt} loading="lazy" />
+                  </button>
+                  <figcaption><strong>{screenshot.title}</strong><span>{screenshot.description}</span></figcaption>
+                </figure>
+              ))}
             </div>
           </div>
         </section>
+
+        {activeScreenshot && (
+          <div className="router-lightbox" role="dialog" aria-modal="true" aria-label={`${activeScreenshot.alt}预览`}>
+            <div className="router-lightbox__panel">
+              <button className="router-lightbox__close" type="button" aria-label="关闭预览" onClick={() => setActiveScreenshot(null)}>
+                <X size={20} aria-hidden="true" />
+              </button>
+              <img src={activeScreenshot.src} alt={`放大预览：${activeScreenshot.alt}`} />
+            </div>
+          </div>
+        )}
 
         <section className="router-setup">
           <div className="page-shell">
