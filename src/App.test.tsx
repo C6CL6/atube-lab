@@ -155,4 +155,24 @@ describe("官网路由", () => {
     expect(screen.getByRole("heading", { name: "选择游戏界面与难度" })).toBeInTheDocument();
     expect(document.querySelector(".sudoku-app--playing")).not.toBeInTheDocument();
   });
+
+  it("通过 /router 打开 Mac OS软路由页面", () => {
+    render(
+      <MemoryRouter initialEntries={["/router"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "Mac OS软路由" })).toBeInTheDocument();
+  });
+
+  it("旧创作手记地址回到首页", () => {
+    render(
+      <MemoryRouter initialEntries={["/notes/anything"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+  });
 });

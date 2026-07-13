@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { HomePage } from "./pages/HomePage";
 import { LearningPage } from "./pages/LearningPage";
 import { MusicPage } from "./pages/MusicPage";
-import { NotePage } from "./pages/NotePage";
+import { RouterPage } from "./pages/RouterPage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { SudokuPage } from "./pages/SudokuPage";
 
@@ -28,10 +28,11 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/learning" element={<LearningPage />} />
         <Route path="/music" element={<MusicPage />} />
+        <Route path="/router" element={<RouterPage />} />
         <Route path="/sudoku" element={<SudokuPage />} />
         <Route path="/guandan" element={<Navigate to="/" replace />} />
         <Route path="/series/:slug" element={<SeriesPage />} />
-        <Route path="/notes/:slug" element={<NotePage />} />
+        <Route path="/notes/*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

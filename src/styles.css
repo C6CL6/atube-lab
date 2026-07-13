@@ -154,7 +154,7 @@ button { color: inherit; }
   gap: 32px;
   margin-bottom: 38px;
 }
-.section-heading h2, .notes-intro h2 {
+.section-heading h2 {
   margin: 0;
   font-family: var(--serif);
   font-size: clamp(2rem, 3vw, 3.1rem);
@@ -294,22 +294,6 @@ button { color: inherit; }
 .music-directory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 42px 24px; }
 .section--music-directory { background: #e7ded0; }
 .section--music-experiments { background: var(--paper); }
-
-.notes-layout { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 80px; }
-.section--notes { background: #e7ded0; }
-.notes-intro > p:last-child { color: var(--muted); line-height: 1.8; }
-.notes-list { border-top: 1px solid var(--ink); }
-.note-row {
-  display: grid;
-  grid-template-columns: 42px 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 24px 0;
-  border-bottom: 1px solid var(--line);
-}
-.note-row span { color: var(--red); font-size: 0.78rem; }
-.note-row strong { font-family: var(--serif); font-size: 1.12rem; font-weight: 600; }
-.note-row:hover strong { color: var(--red); }
 
 .router-hero { padding-block: 92px; border-bottom: 1px solid var(--line); background: var(--ivory); }
 .router-hero__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .68fr); gap: clamp(36px, 7vw, 96px); align-items: center; }
@@ -551,7 +535,7 @@ button { color: inherit; }
   .featured-grid { grid-template-columns: 1fr 1fr; }
   .featured-grid .work-card--feature { grid-column: 1 / -1; }
   .story-grid, .home-music-grid { grid-template-columns: 1fr; }
-  .music-columns, .notes-layout { grid-template-columns: 1fr; gap: 56px; }
+  .music-columns { grid-template-columns: 1fr; gap: 56px; }
   .music-columns > div:first-child,
   .music-columns > div:last-child { grid-column: auto; }
   .learning-hero { grid-template-columns: 1fr; gap: 34px; }
