@@ -6,7 +6,6 @@ import { LearningMark } from "../components/LearningMark";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { audioStories, musicWorks } from "../data/works";
-import { notes } from "../data/notes";
 import type { Work } from "../types/work";
 
 const favoriteMusicWorks = [
@@ -33,7 +32,7 @@ export function HomePage() {
             <p className="eyeline">SOUND · STORY · ARTIFICIAL INTELLIGENCE</p>
             <h1>让算法参与创作，<br />让作品保留人的判断。</h1>
             <p className="hero__intro">
-              这里收藏原创 AI 歌曲、AI有声小说，以及从一句灵感走到成品的创作手记。
+              这里收藏原创 AI 歌曲、AI有声小说，以及正在实践中的小型技术产品。
             </p>
             <div className="hero__actions">
               <Link className="button button--primary" to="/music">进入AI歌曲专题</Link>
@@ -141,21 +140,14 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="section section--notes" id="notes">
-          <div className="page-shell notes-layout">
-            <div className="notes-intro">
-              <p className="eyeline">CREATIVE NOTES</p>
-              <h2>创作手记</h2>
+        <section className="router-entry" id="router">
+          <div className="page-shell router-entry__inner">
+            <div>
+              <p className="eyeline">HOME NETWORK · MACOS</p>
+              <h2>Mac OS软路由</h2>
+              <p>将 Mac 作为家庭网络的软路由管理终端，集中查看状态并控制既有运行时。</p>
             </div>
-            <div className="notes-list">
-              {notes.map((note) => (
-                <Link key={note.slug} to={`/notes/${note.slug}`} className="note-row">
-                  <span>{note.number}</span>
-                  <strong>{note.title}</strong>
-                  <ArrowRight size={18} />
-                </Link>
-              ))}
-            </div>
+            <Link className="button button--primary" to="/router">查看软路由详情</Link>
           </div>
         </section>
       </main>

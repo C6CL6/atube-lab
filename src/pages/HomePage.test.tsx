@@ -68,4 +68,16 @@ describe("首页音乐专题入口", () => {
     expect(screen.getByRole("heading", { name: "数独挑战" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /进入数独游戏/ })).toHaveAttribute("href", "/sudoku");
   });
+
+  it("以 Mac OS软路由模块替换创作手记", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "Mac OS软路由" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "查看软路由详情" })).toHaveAttribute("href", "/router");
+    expect(screen.queryByRole("heading", { name: "创作手记" })).not.toBeInTheDocument();
+  });
 });

@@ -23,4 +23,15 @@ describe("网站导航", () => {
 
     expect(screen.queryByRole("link", { name: "掼蛋" })).not.toBeInTheDocument();
   });
+
+  it("提供软路由入口，不再展示创作手记入口", () => {
+    render(
+      <MemoryRouter>
+        <SiteHeader />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("link", { name: "软路由" })).toHaveAttribute("href", "/router");
+    expect(screen.queryByRole("link", { name: "创作手记" })).not.toBeInTheDocument();
+  });
 });
