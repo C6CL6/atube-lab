@@ -21,4 +21,20 @@ describe("Mac OS软路由页面", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Apple 公证/)).toBeInTheDocument();
   });
+
+  it("说明将 Mac 的 VPN 连接共享给家庭设备的使用步骤", () => {
+    render(
+      <MemoryRouter>
+        <RouterPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/共享其 VPN 网络连接/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "四步完成家庭网络共享" })).toBeInTheDocument();
+    expect(screen.getAllByText("启动软路由")).toHaveLength(2);
+    expect(screen.getByText("192.168.2.66（示例）")).toBeInTheDocument();
+    expect(screen.getByText("8.8.8.8 / 1.1.1.1")).toBeInTheDocument();
+    expect(screen.getByText(/测试期间免费使用/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "zhenlu139@gmail.com" })).toHaveAttribute("href", "mailto:zhenlu139@gmail.com");
+  });
 });
