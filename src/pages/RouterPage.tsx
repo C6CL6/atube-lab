@@ -66,7 +66,7 @@ export function RouterPage() {
           <div className="page-shell">
             <header className="section-heading">
               <div><p className="eyeline">PRODUCT TOUR</p><h2>看看它如何管理家庭网络</h2></div>
-              <p>从运行状态、网络路径到设备与控制项，所有关键信息都集中在同一个 macOS 应用中。</p>
+              <p>从运行状态、网络路径到设备管理和操作控制项，所有关键信息都集中在同一个 macOS 应用中。</p>
             </header>
             <div className="router-showcase__grid">
               {screenshots.map((screenshot) => (
