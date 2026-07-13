@@ -37,4 +37,18 @@ describe("Mac OS软路由页面", () => {
     expect(screen.getByText(/测试期间免费使用/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "zhenlu139@gmail.com" })).toHaveAttribute("href", "mailto:zhenlu139@gmail.com");
   });
+
+  it("展示软路由的仪表盘、拓扑图、设备与操作界面", () => {
+    render(
+      <MemoryRouter>
+        <RouterPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "看看它如何管理家庭网络" })).toBeInTheDocument();
+    expect(screen.getByAltText("Mac OS软路由仪表盘与运行状态")).toHaveAttribute("src", "/images/router/dashboard.png");
+    expect(screen.getByAltText("Mac OS软路由网络拓扑图")).toHaveAttribute("src", "/images/router/topology.png");
+    expect(screen.getByAltText("Mac OS软路由设备管理列表")).toHaveAttribute("src", "/images/router/devices.png");
+    expect(screen.getByAltText("Mac OS软路由启动与自动启动控制")).toHaveAttribute("src", "/images/router/controls.png");
+  });
 });

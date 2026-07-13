@@ -53,6 +53,33 @@ export function RouterPage() {
           </div>
         </section>
 
+        <section className="router-showcase">
+          <div className="page-shell">
+            <header className="section-heading">
+              <div><p className="eyeline">PRODUCT TOUR</p><h2>看看它如何管理家庭网络</h2></div>
+              <p>从运行状态、网络路径到设备与控制项，所有关键信息都集中在同一个 macOS 应用中。</p>
+            </header>
+            <div className="router-showcase__grid">
+              <figure className="router-showcase__item router-showcase__item--wide">
+                <img src="/images/router/dashboard.png" alt="Mac OS软路由仪表盘与运行状态" />
+                <figcaption><strong>运行仪表盘</strong><span>VPN 出口、内网地址、流量与经过网关的设备一目了然。</span></figcaption>
+              </figure>
+              <figure className="router-showcase__item">
+                <img src="/images/router/topology.png" alt="Mac OS软路由网络拓扑图" loading="lazy" />
+                <figcaption><strong>网络拓扑</strong><span>直观看到设备、内网、转发、VPN 与互联网之间的路径。</span></figcaption>
+              </figure>
+              <figure className="router-showcase__item">
+                <img src="/images/router/devices.png" alt="Mac OS软路由设备管理列表" loading="lazy" />
+                <figcaption><strong>设备管理</strong><span>区分已接入网关和仅在局域网可见的设备，便于逐台核对。</span></figcaption>
+              </figure>
+              <figure className="router-showcase__item">
+                <img src="/images/router/controls.png" alt="Mac OS软路由启动与自动启动控制" loading="lazy" />
+                <figcaption><strong>操作控制</strong><span>随时启动、停止软路由，并按需设置开机自启。</span></figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+
         <section className="router-setup">
           <div className="page-shell">
             <header className="section-heading">
