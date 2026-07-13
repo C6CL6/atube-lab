@@ -13,6 +13,8 @@ type Props = {
   user: UserProfile
   game: GameState
   onChange: (game: GameState) => void
+  onTick?: (game: GameState) => void
+  onResume?: (game: GameState) => void
   onNewGame: (difficulty: Difficulty) => void
   onComplete: (game: GameState) => Completion
   onSwitchUser: () => void
@@ -20,6 +22,8 @@ type Props = {
   onExitGame: () => void
   isGameWindow?: boolean
   onReturnHome: () => void
+  limitMessage?: string
+  resuming?: boolean
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: '新手', medium: '高手', hard: '专家' }
@@ -63,7 +67,7 @@ function newlyCompletedCells(index: number, before: number[], after: number[]) {
   ]
 }
 
-export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome }: Props) {
+export function GameScreen({ user, game, onChange, onTick, onResume, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome, limitMessage, resuming = false }: Props) {
   const [wrongCell, setWrongCell] = useState<number | null>(null)
   const [flashingCells, setFlashingCells] = useState<number[]>([])
   const [scorePops, setScorePops] = useState<Array<{ id: number; index: number; points: number }>>([])
@@ -76,10 +80,12 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
   useEffect(() => {
     if (game.paused || game.completed) return
     const timer = window.setInterval(() => {
-      onChange({ ...game, elapsedSeconds: game.elapsedSeconds + 1 })
+      const next = { ...game, elapsedSeconds: game.elapsedSeconds + 1 }
+      if (onTick) onTick(next)
+      else onChange(next)
     }, 1000)
     return () => window.clearInterval(timer)
-  }, [game, onChange])
+  }, [game, onChange, onTick])
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -309,7 +315,14 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
             {game.paused ? (
               <div className="pause-cover">
                 <h2>游戏已暂停</h2>
-                <button className="primary-button" onClick={() => onChange({ ...game, paused: false })}>继续游戏</button>
+                {limitMessage ? <p className="form-error" role="alert">{limitMessage}</p> : null}
+                <button
+                  className="primary-button"
+                  onClick={() => onResume ? void onResume(game) : onChange({ ...game, paused: false })}
+                  disabled={resuming}
+                >
+                  继续游戏
+                </button>
               </div>
             ) : null}
           </div>

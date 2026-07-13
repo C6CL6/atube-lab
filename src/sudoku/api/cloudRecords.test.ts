@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { GameRecord } from '../domain/types'
-import { fetchCloudRecords, getCloudRecordsEndpoint, getPlaySessionsEndpoint, startCloudPlaySession, submitCloudRecord } from './cloudRecords'
+import { fetchCloudRecords, getCloudRecordsEndpoint, getPlaySessionsEndpoint, syncCloudPlayLimit, submitCloudRecord } from './cloudRecords'
 
 function makeRecord(score: number): GameRecord {
   return {
@@ -66,15 +66,42 @@ describe('云端成绩客户端', () => {
     await expect(submitCloudRecord(makeRecord(1200))).resolves.toEqual({ ok: false })
   })
 
-  it('开局超过每日限制时返回后端提示', async () => {
+  it('连续游戏超过两小时时返回后端休息提示', async () => {
     vi.spyOn(window, 'fetch').mockResolvedValue(new Response(
-      JSON.stringify({ error: '已经超过一天的限制了，请明天再玩' }),
+      JSON.stringify({ error: '已连续游戏 2 小时，请休息 30 分钟后继续', restSeconds: 1800 }),
       { status: 429 },
     ))
 
-    await expect(startCloudPlaySession('device-1234567890')).resolves.toEqual({
+    await expect(syncCloudPlayLimit({
+      deviceId: 'device-1234567890',
+      action: 'play',
+      gameId: 'game-1',
+      elapsedSeconds: 7200,
+    })).resolves.toEqual({
       ok: false,
-      message: '已经超过一天的限制了，请明天再玩',
+      message: '已连续游戏 2 小时，请休息 30 分钟后继续',
+      restSeconds: 1800,
     })
+    expect(window.fetch).toHaveBeenCalledWith('https://atube-lab.netlify.app/api/sudoku/play-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        deviceId: 'device-1234567890',
+        action: 'play',
+        gameId: 'game-1',
+        elapsedSeconds: 7200,
+      }),
+    })
+  })
+
+  it('防沉迷服务暂时不可用时不阻断本地游戏', async () => {
+    vi.spyOn(window, 'fetch').mockRejectedValue(new Error('offline'))
+
+    await expect(syncCloudPlayLimit({
+      deviceId: 'device-1234567890',
+      action: 'start',
+      gameId: 'game-1',
+      elapsedSeconds: 0,
+    })).resolves.toEqual({ ok: false, unavailable: true, message: '防沉迷服务暂时不可用' })
   })
 })

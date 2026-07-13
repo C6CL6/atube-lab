@@ -6,14 +6,14 @@ import { PlayerModal } from "../components/PlayerModal";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { audioStories } from "../data/works";
-import { getBilibiliVideoUrl } from "../lib/bilibili";
+import { BILIBILI_PROFILE_URL, getBilibiliVideoUrl } from "../lib/bilibili";
 import type { Work } from "../types/work";
 
 const seriesInfo = {
   protagonist: {
     name: "主角" as const,
     author: "陈彦",
-    status: "持续更新",
+    status: "已完结 · B站全集 150 集",
     award: "第十届茅盾文学奖获奖小说",
     cover: "/covers/protagonist-editorial.png",
     summary: "从秦腔舞台与个人命运出发，观察一个普通人如何在时代、艺术与自我之间成为自己的主角。"
@@ -39,6 +39,7 @@ export function SeriesPage() {
 
   if (!info) return <Navigate to="/" replace />;
   const latest = episodes.at(-1)!;
+  const isProtagonist = info.name === "主角";
 
   return (
     <>
@@ -63,8 +64,13 @@ export function SeriesPage() {
                 播放最新一集
               </button>
             </div>
-            <a className="text-link" href={getBilibiliVideoUrl(episodes[0].bvid)} target="_blank" rel="noreferrer">
-              在B站打开 <ExternalLink size={15} />
+            <a
+              className="text-link"
+              href={isProtagonist ? BILIBILI_PROFILE_URL : getBilibiliVideoUrl(episodes[0].bvid)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {isProtagonist ? "查看 B站全集（150 集）" : "在B站打开"} <ExternalLink size={15} />
             </a>
           </div>
         </section>
@@ -80,8 +86,12 @@ export function SeriesPage() {
 
         <section className="section page-shell">
           <header className="section-heading">
-            <div><p className="eyeline">EPISODE DIRECTORY</p><h2>完整分集目录</h2></div>
-            <p>共 {episodes.length} 集，支持按集数搜索。</p>
+            <div><p className="eyeline">EPISODE DIRECTORY</p><h2>{isProtagonist ? "已收录分集目录" : "完整分集目录"}</h2></div>
+            <p>
+              {isProtagonist
+                ? `B站已发布全集 150 集；本站已收录 ${episodes.length} 集，完整目录请在 B站查看。`
+                : `共 ${episodes.length} 集，支持按集数搜索。`}
+            </p>
           </header>
           <EpisodeDirectory episodes={episodes} onPlay={setActiveWork} />
         </section>

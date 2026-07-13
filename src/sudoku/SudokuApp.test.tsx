@@ -139,7 +139,7 @@ describe('数独应用记录成绩', () => {
     expect(saved.games['user-1'].boardStyle).toBe('minimal')
   })
 
-  it('第7局被防沉迷限制时提示明天再玩并阻止开局', async () => {
+  it('连续游戏满两小时后提示休息并阻止开局', async () => {
     const user: UserProfile = {
       id: 'user-1',
       name: '阿土伯',
@@ -158,7 +158,7 @@ describe('数独应用记录成绩', () => {
     vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
       const url = String(input)
       if (init?.method === 'POST' && url.includes('/api/sudoku/play-sessions')) {
-        return new Response(JSON.stringify({ error: '已经超过一天的限制了，请明天再玩' }), { status: 429 })
+        return new Response(JSON.stringify({ error: '已连续游戏 2 小时，请休息 30 分钟后继续', restSeconds: 1800 }), { status: 429 })
       }
       return new Response(JSON.stringify({ records: [] }), { status: 200 })
     })
@@ -168,7 +168,7 @@ describe('数独应用记录成绩', () => {
 
     await userAction.click(screen.getByRole('button', { name: '新手 轻松热身' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('已经超过一天的限制了，请明天再玩')
+    expect(await screen.findByRole('alert')).toHaveTextContent('已连续游戏 2 小时，请休息 30 分钟后继续')
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AppData
     expect(saved.games['user-1']).toBeUndefined()
   })

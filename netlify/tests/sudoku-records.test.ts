@@ -106,54 +106,48 @@ describe('/api/sudoku/records', () => {
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST')
   })
 
-  it('同一设备北京时间同一天最多只能开始6局数独', async () => {
-    for (let index = 1; index <= 6; index += 1) {
-      const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceId: 'device-aaaaaaaaaaaaaaaa',
-          startedAt: `2026-06-25T0${index}:00:00.000Z`,
-        }),
-      }))
-      const body = await response.json() as { remaining: number }
-
-      expect(response.status).toBe(201)
-      expect(body.remaining).toBe(6 - index)
-    }
-
-    const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+  it('同一设备累计实际游戏两小时后必须休息半小时', async () => {
+    const deviceId = 'device-aaaaaaaaaaaaaaaa'
+    const start = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
       method: 'POST',
-      body: JSON.stringify({
-        deviceId: 'device-aaaaaaaaaaaaaaaa',
-        startedAt: '2026-06-25T07:00:00.000Z',
-      }),
+      body: JSON.stringify({ deviceId, action: 'start', gameId: 'game-1', elapsedSeconds: 0, at: '2026-06-25T08:00:00.000Z' }),
     }))
-    const body = await response.json() as { error: string; remaining: number }
+    expect(start.status).toBe(200)
 
-    expect(response.status).toBe(429)
-    expect(body.error).toBe('已经超过一天的限制了，请明天再玩')
-    expect(body.remaining).toBe(0)
+    const limit = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, action: 'play', gameId: 'game-1', elapsedSeconds: 7200, at: '2026-06-25T10:00:00.000Z' }),
+    }))
+    const body = await limit.json() as { error: string; restSeconds: number }
+
+    expect(limit.status).toBe(429)
+    expect(body.error).toBe('已连续游戏 2 小时，请休息 30 分钟后继续')
+    expect(body.restSeconds).toBe(1800)
   })
 
-  it('数独防沉迷按北京时间自然日重置', async () => {
-    for (let index = 1; index <= 6; index += 1) {
-      await handler(new Request('https://example.com/api/sudoku/play-sessions', {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceId: 'device-aaaaaaaaaaaaaaaa',
-          startedAt: `2026-06-25T0${index}:00:00.000Z`,
-        }),
-      }))
-    }
-
-    const response = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+  it('暂停或退出满三十分钟后重置同一设备的连续游戏时间', async () => {
+    const deviceId = 'device-bbbbbbbbbbbbbbbb'
+    await handler(new Request('https://example.com/api/sudoku/play-sessions', {
       method: 'POST',
-      body: JSON.stringify({
-        deviceId: 'device-aaaaaaaaaaaaaaaa',
-        startedAt: '2026-06-25T16:30:00.000Z',
-      }),
+      body: JSON.stringify({ deviceId, action: 'start', gameId: 'game-1', elapsedSeconds: 0, at: '2026-06-25T08:00:00.000Z' }),
+    }))
+    await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, action: 'play', gameId: 'game-1', elapsedSeconds: 7100, at: '2026-06-25T09:58:20.000Z' }),
+    }))
+    await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, action: 'pause', gameId: 'game-1', elapsedSeconds: 7100, at: '2026-06-25T09:58:20.000Z' }),
     }))
 
-    expect(response.status).toBe(201)
+    const resume = await handler(new Request('https://example.com/api/sudoku/play-sessions', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, action: 'resume', gameId: 'game-1', elapsedSeconds: 7100, at: '2026-06-25T10:28:20.000Z' }),
+    }))
+    const body = await resume.json() as { activeSeconds: number; remainingSeconds: number }
+
+    expect(resume.status).toBe(200)
+    expect(body.activeSeconds).toBe(0)
+    expect(body.remainingSeconds).toBe(7200)
   })
 })

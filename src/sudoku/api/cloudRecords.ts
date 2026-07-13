@@ -48,17 +48,56 @@ export async function submitCloudRecord(record: GameRecord): Promise<{ ok: boole
   }
 }
 
-export async function startCloudPlaySession(deviceId: string, startedAt = new Date().toISOString()): Promise<{ ok: boolean; message?: string }> {
+export type PlayLimitAction = 'start' | 'resume' | 'play' | 'pause'
+
+export type PlayLimitRequest = {
+  deviceId: string
+  action: PlayLimitAction
+  gameId: string
+  elapsedSeconds: number
+}
+
+export type PlayLimitResult = {
+  ok: boolean
+  unavailable?: boolean
+  activeSeconds?: number
+  remainingSeconds?: number
+  restSeconds?: number
+  message?: string
+}
+
+export async function syncCloudPlayLimit(request: PlayLimitRequest): Promise<PlayLimitResult> {
   try {
     const response = await fetch(getPlaySessionsEndpoint(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ deviceId, startedAt }),
+      body: JSON.stringify(request),
     })
-    if (response.ok) return { ok: true }
-    const body = await response.json().catch(() => ({})) as { error?: string }
-    return { ok: false, message: body.error ?? '暂时无法开始游戏，请稍后再试' }
+    const body = await response.json().catch(() => ({})) as {
+      error?: string
+      activeSeconds?: number
+      remainingSeconds?: number
+      restSeconds?: number
+    }
+    if (response.ok) {
+      return {
+        ok: true,
+        activeSeconds: body.activeSeconds,
+        remainingSeconds: body.remainingSeconds,
+        restSeconds: body.restSeconds,
+      }
+    }
+    if (response.status >= 500) {
+      return { ok: false, unavailable: true, message: '防沉迷服务暂时不可用' }
+    }
+    return {
+      ok: false,
+      activeSeconds: body.activeSeconds,
+      remainingSeconds: body.remainingSeconds,
+      restSeconds: body.restSeconds,
+      message: body.error ?? '暂时无法开始游戏，请稍后再试',
+    }
   } catch {
-    return { ok: false, message: '暂时无法开始游戏，请稍后再试' }
+    return { ok: false, unavailable: true, message: '防沉迷服务暂时不可用' }
   }
 }

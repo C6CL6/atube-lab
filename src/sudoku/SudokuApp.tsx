@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GameScreen } from './components/GameScreen'
 import { DifficultyStartScreen } from './components/DifficultyStartScreen'
 import { LoginScreen } from './components/LoginScreen'
 import { RankingModal } from './components/RankingModal'
-import { fetchCloudRecords, startCloudPlaySession, submitCloudRecord } from './api/cloudRecords'
+import { fetchCloudRecords, syncCloudPlayLimit, submitCloudRecord } from './api/cloudRecords'
 import { rankRecords, topRankingRecords } from './domain/ranking'
 import type { AppData, BoardStyle, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
@@ -17,6 +17,7 @@ type Props = {
 }
 
 const DEVICE_ID_KEY = 'atube-sudoku-device-id'
+const SYNC_INTERVAL_SECONDS = 30
 
 function getSudokuDeviceId() {
   const existing = localStorage.getItem(DEVICE_ID_KEY)
@@ -24,6 +25,12 @@ function getSudokuDeviceId() {
   const id = crypto.randomUUID()
   localStorage.setItem(DEVICE_ID_KEY, id)
   return id
+}
+
+function restMessage(restSeconds: number) {
+  return restSeconds > 0
+    ? `已连续游戏 2 小时，请休息 ${Math.ceil(restSeconds / 60)} 分钟后继续`
+    : '休息结束，可以继续游戏'
 }
 
 export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingChange, onReturnHome }: Props = {}) {
@@ -34,6 +41,9 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   const [cloudUnavailable, setCloudUnavailable] = useState(false)
   const [limitMessage, setLimitMessage] = useState('')
   const [startingGame, setStartingGame] = useState(false)
+  const [remainingPlaySeconds, setRemainingPlaySeconds] = useState<number | null>(null)
+  const [restSeconds, setRestSeconds] = useState(0)
+  const mounted = useRef(true)
   const activeUser = data.users.find((user) => user.id === data.activeUserId)
   const currentGame = activeUser ? data.games[activeUser.id] : undefined
 
@@ -72,6 +82,7 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
 
   const refreshCloudRecords = useCallback(async () => {
     const result = await fetchCloudRecords()
+    if (!mounted.current) return
     setCloudRecords(result.records)
     setCloudUnavailable(result.unavailable)
   }, [])
@@ -91,12 +102,31 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   }, [refreshCloudRecords])
 
   useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     onPlayingChange?.(Boolean(activeUser && currentGame && playInCurrentWindow))
   }, [activeUser, currentGame, onPlayingChange, playInCurrentWindow])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [activeUser?.id, currentGame?.id])
+
+  useEffect(() => {
+    if (restSeconds <= 0) return
+    const timer = window.setInterval(() => {
+      setRestSeconds((seconds) => Math.max(0, seconds - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [restSeconds > 0])
+
+  useEffect(() => {
+    if (restSeconds > 0) setLimitMessage(restMessage(restSeconds))
+  }, [restSeconds])
 
   if (!activeUser) {
     return (
@@ -121,31 +151,87 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
     )
   }
 
+  const pauseStoredGame = (game: GameState) => {
+    setData((current) => {
+      const ownerId = Object.entries(current.games).find(([, item]) => item.id === game.id)?.[0]
+      if (!ownerId) return current
+      const next = { ...current, games: { ...current.games, [ownerId]: { ...current.games[ownerId], paused: true } } }
+      saveAppData(next)
+      return next
+    })
+  }
+
+  const syncPlayLimit = async (action: 'start' | 'resume' | 'play' | 'pause', game: GameState) => {
+    const result = await syncCloudPlayLimit({
+      deviceId: getSudokuDeviceId(),
+      action,
+      gameId: game.id,
+      elapsedSeconds: game.elapsedSeconds,
+    })
+    if (result.unavailable) {
+      setRemainingPlaySeconds(null)
+      return true
+    }
+    if (result.ok) {
+      setRemainingPlaySeconds(result.remainingSeconds ?? null)
+      if (action === 'start' || action === 'resume') {
+        setRestSeconds(0)
+        setLimitMessage('')
+      }
+      return true
+    }
+
+    const nextRestSeconds = result.restSeconds ?? 0
+    setRestSeconds(nextRestSeconds)
+    setLimitMessage(result.message ?? (nextRestSeconds > 0 ? restMessage(nextRestSeconds) : '暂时无法开始游戏，请稍后再试'))
+    pauseStoredGame(game)
+    return false
+  }
+
   const updateGame = (game: GameState) => {
+    const wasPaused = currentGame?.id === game.id && currentGame.paused
     setData((current) => {
       const next = { ...current, games: { ...current.games, [activeUser.id]: game } }
       saveAppData(next)
       return next
     })
+    if (game.paused && !wasPaused) void syncPlayLimit('pause', game)
+  }
+
+  const handleGameTick = (game: GameState) => {
+    if (remainingPlaySeconds !== null && remainingPlaySeconds <= 1) {
+      updateGame({ ...game, paused: true })
+      void syncPlayLimit('play', game)
+      return
+    }
+    updateGame(game)
+    setRemainingPlaySeconds((seconds) => seconds === null ? null : Math.max(0, seconds - 1))
+    if (game.elapsedSeconds % SYNC_INTERVAL_SECONDS === 0) void syncPlayLimit('play', game)
+  }
+
+  const resumeGame = async (game: GameState) => {
+    if (startingGame) return
+    setStartingGame(true)
+    try {
+      if (await syncPlayLimit('resume', game)) updateGame({ ...game, paused: false })
+    } finally {
+      setStartingGame(false)
+    }
   }
 
   const newGame = (difficulty: Difficulty, boardStyle: BoardStyle = data.lastBoardStyle ?? 'decorative') => {
     if (startingGame) return
     setStartingGame(true)
     setLimitMessage('')
-    void startCloudPlaySession(getSudokuDeviceId()).then((result) => {
-      if (!result.ok) {
-        const message = result.message ?? '已经超过一天的限制了，请明天再玩'
-        setLimitMessage(message)
-        if (currentGame) window.alert(message)
-        return
-      }
-
+    void (async () => {
+      if (currentGame && !currentGame.paused) await syncPlayLimit('pause', currentGame)
+      const game = createGame(difficulty, boardStyle)
+      if (!await syncPlayLimit('start', game)) return
       const next = {
         ...data,
         lastDifficulty: difficulty,
         lastBoardStyle: boardStyle,
-        games: { ...data.games, [activeUser.id]: createGame(difficulty, boardStyle) },
+        games: { ...data.games, [activeUser.id]: game },
       }
       persist(next)
       if (gameWindowMode) {
@@ -154,7 +240,7 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
       }
       const opened = onOpenGameWindow?.() ?? false
       setPlayInCurrentWindow(!opened)
-    }).finally(() => setStartingGame(false))
+    })().finally(() => setStartingGame(false))
   }
 
   if (!currentGame || !playInCurrentWindow) {
@@ -216,6 +302,7 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   }
 
   const recordAndEndGame = (game: GameState) => {
+    if (!game.paused) void syncPlayLimit('pause', game)
     const games = { ...data.games }
     delete games[activeUser.id]
     const record: GameRecord | null = game.recorded ? null : {
@@ -255,6 +342,8 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
         user={activeUser}
         game={currentGame}
         onChange={updateGame}
+        onTick={handleGameTick}
+        onResume={resumeGame}
         onNewGame={newGame}
         onComplete={completeGame}
         onSwitchUser={() => persist({ ...data, activeUserId: null })}
@@ -262,6 +351,8 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
         onExitGame={() => exitGame(currentGame)}
         isGameWindow={gameWindowMode}
         onReturnHome={() => returnHome(currentGame)}
+        limitMessage={limitMessage}
+        resuming={startingGame}
       />
       {showRanking ? (
         <RankingModal

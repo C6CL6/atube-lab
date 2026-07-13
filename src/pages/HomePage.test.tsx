@@ -48,6 +48,16 @@ describe("首页音乐专题入口", () => {
     expect(screen.queryByText(/矛盾文学奖/)).not.toBeInTheDocument();
   });
 
+  it("将《主角》标记为B站已完结的150集全集", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("已完结 · 150 集")).toBeInTheDocument();
+  });
+
   it("首页提供数独游戏入口", () => {
     render(
       <MemoryRouter>
