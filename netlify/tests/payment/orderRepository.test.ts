@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs'
+
 import { describe, expect, it } from 'vitest'
 
 import {
   SupabasePaymentOrderRepository,
   hashMachineCode,
   hashPaymentToken,
+  type PaymentOrderInput,
   type PaymentOrderStore,
 } from '../../payment/orderRepository'
 
@@ -58,18 +61,17 @@ class MemoryStore implements PaymentOrderStore {
   }
 }
 
-function createOrder(overrides: Partial<Order> = {}): Order {
+function createOrder(overrides: Partial<PaymentOrderInput> = {}): PaymentOrderInput {
   return {
     id: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5',
-    client_request_id: '96b2aa7a-33a9-4ed0-8c7c-79cba94eb6ca',
-    status_token_hash: hashPaymentToken('status-token'),
-    checkout_token_hash: hashPaymentToken('checkout-token'),
-    machine_code_hash: hashMachineCode('MOSR-MAC-AAAA-BBBB-CCCC-DDDD-EEEE-FFFF'),
-    authorization_request: 'MOSRREQ1.data',
+    clientRequestID: '96b2aa7a-33a9-4ed0-8c7c-79cba94eb6ca',
+    statusToken: 'status-token',
+    checkoutToken: 'checkout-token',
+    machineCode: 'MOSR-MAC-AAAA-BBBB-CCCC-DDDD-EEEE-FFFF',
+    authorizationRequest: 'MOSRREQ1.data',
     plan: 'month',
-    amount_fen: 980,
-    status: 'pending',
-    expires_at: '2026-07-16T01:00:00.000Z',
+    amountFen: 980,
+    expiresAt: '2026-07-16T01:00:00.000Z',
     ...overrides,
   }
 }
@@ -97,7 +99,7 @@ describe('payment/orderRepository', () => {
     await repository.createOrder(createOrder())
     await repository.createOrder(createOrder({
       id: 'db4bfae1-0d6f-48e4-9b87-7a2e7c56178f',
-      client_request_id: '41349a34-318c-4ce7-9231-1132038cf574',
+      clientRequestID: '41349a34-318c-4ce7-9231-1132038cf574',
     }))
     await repository.claimPaidOrder({
       orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5',
@@ -118,7 +120,7 @@ describe('payment/orderRepository', () => {
     await repository.createOrder(createOrder())
     await repository.createOrder(createOrder({
       id: 'db4bfae1-0d6f-48e4-9b87-7a2e7c56178f',
-      client_request_id: '41349a34-318c-4ce7-9231-1132038cf574',
+      clientRequestID: '41349a34-318c-4ce7-9231-1132038cf574',
     }))
 
     const first = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
@@ -131,7 +133,8 @@ describe('payment/orderRepository', () => {
   it('reclaims a paid order that has not yet been licensed and completes it once', async () => {
     const store = new MemoryStore()
     const repository = new SupabasePaymentOrderRepository(store)
-    await repository.createOrder(createOrder({ status: 'paid', alipay_trade_no: 'trade-1', license_id: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' }))
+    await repository.createOrder(createOrder())
+    Object.assign(store.orders[0], { status: 'paid', alipay_trade_no: 'trade-1', license_id: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
 
     const claimed = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
     const completed = await repository.completeLicense({ orderID: claimed.id, licenseID: claimed.licenseID, licenseKey: 'MOSR2.payload.signature' })
@@ -139,5 +142,26 @@ describe('payment/orderRepository', () => {
     expect(claimed.status).toBe('paid')
     expect(completed.status).toBe('licensed')
     expect(completed.licenseKey).toBe('MOSR2.payload.signature')
+  })
+
+  it('does not accept raw database rows that can bypass hashing', async () => {
+    const repository = new SupabasePaymentOrderRepository(new MemoryStore())
+
+    await expect(repository.createOrder({
+      id: 'raw-order',
+      client_request_id: 'raw-request',
+      status_token_hash: 'plaintext-token',
+      checkout_token_hash: 'plaintext-token',
+      machine_code_hash: 'plaintext-machine',
+      status: 'licensed',
+    } as never)).rejects.toThrow()
+  })
+
+  it('locks RPC execution to service_role and rejects terminal orders', () => {
+    const migration = readFileSync('supabase/migrations/202607150001_vpn_payment.sql', 'utf8')
+
+    expect(migration).toMatch(/grant execute on function public\.claim_vpn_payment_order\([^)]+\) to service_role;/i)
+    expect(migration).toMatch(/grant execute on function public\.complete_vpn_payment_license\([^)]+\) to service_role;/i)
+    expect(migration).toMatch(/v_order\.status not in \('pending', 'paid', 'licensed'\)/)
   })
 })

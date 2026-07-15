@@ -44,7 +44,7 @@ export interface PaymentOrderStore {
 }
 
 export interface PaymentOrderRepository {
-  createOrder(input: PaymentOrderInput | Record<string, unknown>): Promise<PaymentOrder>
+  createOrder(input: PaymentOrderInput): Promise<PaymentOrder>
   claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }): Promise<ClaimedPaidOrder>
   completeLicense(input: { orderID: string, licenseID: string, licenseKey: string }): Promise<PaymentOrder>
 }
@@ -92,26 +92,36 @@ export class SupabasePaymentOrderRepository implements PaymentOrderRepository {
     return new SupabasePaymentOrderRepository(new SupabaseStore(client))
   }
 
-  async createOrder(input: PaymentOrderInput | Record<string, unknown>) {
-    const supplied = input as Record<string, unknown>
-    const clientRequestID = String(supplied.clientRequestID ?? supplied.client_request_id)
+  async createOrder(input: PaymentOrderInput) {
+    const requiredStrings = [
+      input.id,
+      input.clientRequestID,
+      input.statusToken,
+      input.checkoutToken,
+      input.machineCode,
+      input.authorizationRequest,
+      input.expiresAt,
+    ]
+    if (requiredStrings.some((value) => typeof value !== 'string' || value.trim() === '')) {
+      throw new Error('Invalid payment order input')
+    }
+
+    const clientRequestID = input.clientRequestID
     const existing = await this.store.findOrderByClientRequestID(clientRequestID)
     if (existing) return toPaymentOrder(existing)
 
-    const order = 'statusToken' in supplied
-      ? {
-          id: supplied.id,
-          client_request_id: clientRequestID,
-          status_token_hash: hashPaymentToken(String(supplied.statusToken)),
-          checkout_token_hash: hashPaymentToken(String(supplied.checkoutToken)),
-          machine_code_hash: hashMachineCode(String(supplied.machineCode)),
-          authorization_request: supplied.authorizationRequest,
-          plan: supplied.plan,
-          amount_fen: supplied.amountFen,
-          status: 'pending',
-          expires_at: supplied.expiresAt,
-        }
-      : supplied
+    const order = {
+      id: input.id,
+      client_request_id: clientRequestID,
+      status_token_hash: hashPaymentToken(input.statusToken),
+      checkout_token_hash: hashPaymentToken(input.checkoutToken),
+      machine_code_hash: hashMachineCode(input.machineCode),
+      authorization_request: input.authorizationRequest,
+      plan: input.plan,
+      amount_fen: input.amountFen,
+      status: 'pending',
+      expires_at: input.expiresAt,
+    }
 
     try {
       return toPaymentOrder(await this.store.insertOrder(order))

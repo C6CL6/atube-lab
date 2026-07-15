@@ -66,6 +66,10 @@ begin
     raise exception 'payment order not found' using errcode = 'P0002';
   end if;
 
+  if v_order.status not in ('pending', 'paid', 'licensed') then
+    raise exception 'payment order is not claimable' using errcode = 'P0001';
+  end if;
+
   if v_order.alipay_trade_no is not null and v_order.alipay_trade_no <> p_alipay_trade_no then
     raise exception 'payment order already belongs to another Alipay trade' using errcode = '23505';
   end if;
@@ -177,3 +181,5 @@ revoke all on table public.vpn_payment_orders from public, anon, authenticated;
 revoke all on table public.vpn_machine_trial_ledger from public, anon, authenticated;
 revoke all on function public.claim_vpn_payment_order(uuid, text, uuid) from public, anon, authenticated;
 revoke all on function public.complete_vpn_payment_license(uuid, uuid, text) from public, anon, authenticated;
+grant execute on function public.claim_vpn_payment_order(uuid, text, uuid) to service_role;
+grant execute on function public.complete_vpn_payment_license(uuid, uuid, text) to service_role;
