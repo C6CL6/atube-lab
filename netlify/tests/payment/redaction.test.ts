@@ -21,6 +21,15 @@ describe('payment/redaction', () => {
     })
   })
 
+  it.each([
+    '-----BEGIN PUBLIC KEY-----\npublic-material\n-----END PUBLIC KEY-----',
+    '-----BEGIN EC PRIVATE KEY-----\nec-secret\n-----END EC PRIVATE KEY-----',
+    '-----BEGIN ENCRYPTED PRIVATE KEY-----\nencrypted-secret\n-----END ENCRYPTED PRIVATE KEY-----',
+    '-----BEGIN OPENSSH PRIVATE KEY-----\nopenssh-secret\n-----END OPENSSH PRIVATE KEY-----',
+  ])('脱敏其他 PEM 密钥格式', (pem) => {
+    expect(redactPaymentLog(pem)).toBe('[REDACTED]')
+  })
+
   it('保留普通日志字段，避免误伤非敏感信息', () => {
     expect(redactPaymentLog({
       orderID: '0d3be6a2-2c74-4e1f-9162-a8113d26cf19',

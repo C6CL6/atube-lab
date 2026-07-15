@@ -1,5 +1,5 @@
 const REDACTED = '[REDACTED]'
-const PRIVATE_KEY_PATTERN = /-----BEGIN(?: RSA)? PRIVATE KEY-----[\s\S]+?-----END(?: RSA)? PRIVATE KEY-----/g
+const PEM_KEY_PATTERN = /-----BEGIN ((?:[A-Z0-9]+ )*(?:PRIVATE|PUBLIC) KEY)-----[\s\S]+?-----END \1-----/g
 const MOSR2_PATTERN = /MOSR2\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g
 const JWT_PATTERN = /\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g
 
@@ -20,7 +20,7 @@ function isServiceRoleJWT(token: string) {
 }
 
 function redactString(value: string) {
-  let next = value.replace(PRIVATE_KEY_PATTERN, REDACTED)
+  let next = value.replace(PEM_KEY_PATTERN, REDACTED)
   next = next.replace(MOSR2_PATTERN, REDACTED)
   next = next.replace(JWT_PATTERN, (token) => (isServiceRoleJWT(token) ? REDACTED : token))
   return next

@@ -44,6 +44,19 @@ describe('payment/config', () => {
     expect(() => loadPaymentConfig(env)).toThrowError(/ALIPAY_SANDBOX_APP_ID/)
   })
 
+  it.each([
+    'ALIPAY_SANDBOX_GATEWAY',
+    'VPN_LICENSE_SIGNING_PRIVATE_KEY',
+    'ALIPAY_SANDBOX_PUBLIC_KEY',
+    'ALIPAY_SANDBOX_APP_PRIVATE_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+  ])('缺少敏感变量 %s 时 fail closed', (key) => {
+    const env = validEnv()
+    delete env[key]
+
+    expect(() => loadPaymentConfig(env)).toThrowError(new RegExp(key))
+  })
+
   it('空白字符串不会被接受', () => {
     expect(() => loadPaymentConfig({
       ...validEnv(),
