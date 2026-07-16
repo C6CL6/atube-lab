@@ -1,9 +1,11 @@
+import { createHash } from 'node:crypto'
+
 import { describe, expect, it } from 'vitest'
 
 import { createAlipayNotifyHandler } from '../../functions/vpn-payment-alipay-notify'
 import { createPaymentService } from '../../payment/paymentService'
 import type { PaymentConfig } from '../../payment/config'
-import type { VerifiedAlipayNotification, VerifiedAlipayTrade } from '../../payment/alipayGateway'
+import { AlipayTradeQueryError, type VerifiedAlipayNotification, type VerifiedAlipayTrade } from '../../payment/alipayGateway'
 import type { PaymentOrder, PaymentOrderRepository } from '../../payment/orderRepository'
 
 const orderID = '8e06565f-d920-4f2a-bde2-894c7cbbd4d5'
@@ -50,6 +52,10 @@ function paymentOrder(overrides: Partial<PaymentOrder> = {}): PaymentOrder {
   }
 }
 
+function tokenHash(token: string) {
+  return createHash('sha256').update(token, 'utf8').digest('hex')
+}
+
 function notification(overrides: Partial<VerifiedAlipayNotification> = {}): VerifiedAlipayNotification {
   return {
     tradeNo,
@@ -71,7 +77,7 @@ function notificationRequest(fields: Record<string, string> = {}) {
 }
 
 class MemoryOrders implements PaymentOrderRepository {
-  readonly claims: Array<{ orderID: string, alipayTradeNo: string, licenseID: string }> = []
+  readonly claims: Array<{ orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }> = []
   readonly completions: Array<{ orderID: string, licenseID: string, licenseKey: string }> = []
 
   constructor(readonly order: PaymentOrder, private readonly fail = false) {}
@@ -80,7 +86,7 @@ class MemoryOrders implements PaymentOrderRepository {
     throw new Error('not used by notification tests')
   }
 
-  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }) {
+  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }) {
     if (this.fail) throw new Error('service-role-jwt MOSR2.secret')
     if (this.order.alipayTradeNo && this.order.alipayTradeNo !== input.alipayTradeNo) {
       throw new Error('Alipay trade conflict')
@@ -113,6 +119,7 @@ class FakeGateway {
     private readonly verified: VerifiedAlipayNotification = notification(),
     private readonly queried: VerifiedAlipayTrade = notification(),
     private readonly verifyError?: Error,
+    private readonly queryError?: Error,
   ) {}
 
   verifyNotification() {
@@ -122,6 +129,7 @@ class FakeGateway {
 
   async queryTrade(id: string) {
     this.queries.push(id)
+    if (this.queryError) throw this.queryError
     return this.queried
   }
 }
@@ -131,13 +139,15 @@ function createApp(options: {
   verified?: VerifiedAlipayNotification
   queried?: VerifiedAlipayTrade
   verifyError?: Error
+  queryError?: Error
   databaseFails?: boolean
   sign?: (payload: { licenseID: string, expiresAt: number }) => string
 } = {}) {
   const currentOrder = options.order === undefined ? paymentOrder() : options.order
   const orders = new MemoryOrders(currentOrder ?? paymentOrder(), options.databaseFails)
-  const gateway = new FakeGateway(options.verified, options.queried, options.verifyError)
+  const gateway = new FakeGateway(options.verified, options.queried, options.verifyError, options.queryError)
   const logs: unknown[] = []
+  const reconciliationLogs: unknown[] = []
   const signed: Array<{ licenseID: string, expiresAt: number }> = []
   const service = createPaymentService({
     config: config(),
@@ -149,12 +159,15 @@ function createApp(options: {
       signed.push({ licenseID: payload.licenseID, expiresAt: payload.expiresAt })
       return options.sign?.(payload) ?? `MOSR2.${payload.licenseID}.${payload.expiresAt}`
     },
+    logReconciliationFailure: (entry) => reconciliationLogs.push(entry),
   })
   return {
     orders,
     gateway,
     signed,
     logs,
+    reconciliationLogs,
+    service,
     handler: createAlipayNotifyHandler(service, (entry) => logs.push(entry)),
   }
 }
@@ -168,6 +181,65 @@ async function expectFailure(app: ReturnType<typeof createApp>) {
 }
 
 describe('支付宝异步通知', () => {
+  it('轮询待付款订单时主动查单并为已成功交易签发授权', async () => {
+    const statusToken = 'status-token-for-paid-order'
+    const app = createApp({ order: paymentOrder({ statusTokenHash: tokenHash(statusToken) }) })
+
+    const status = await app.service.fetchStatus(orderID, statusToken)
+
+    expect(app.gateway.queries).toEqual([orderID])
+    expect(app.orders.claims).toHaveLength(1)
+    expect(app.orders.completions).toHaveLength(1)
+    expect(app.orders.claims[0]?.trialBonusDays).toBe(13)
+    expect(status.status).toBe('licensed')
+    expect(status.licenseKey).toMatch(/^MOSR2\./)
+  })
+
+  it('主动查单校验失败时只记录订单 ID 和安全分类', async () => {
+    const statusToken = 'status-token-for-mismatched-order'
+    const app = createApp({
+      order: paymentOrder({ statusTokenHash: tokenHash(statusToken) }),
+      queried: notification({ sellerID: 'wrong-seller' }),
+    })
+
+    const status = await app.service.fetchStatus(orderID, statusToken)
+
+    expect(status.status).toBe('pending')
+    expect(app.reconciliationLogs).toEqual([{ orderID, category: 'payment_mismatch' }])
+  })
+
+  it('主动查单业务失败时记录安全原因码且不记录响应正文', async () => {
+    const statusToken = 'status-token-for-query-error'
+    const app = createApp({
+      order: paymentOrder({ statusTokenHash: tokenHash(statusToken) }),
+      queryError: new AlipayTradeQueryError('alipay_40004_ACQ.TRADE_NOT_EXIST'),
+    })
+
+    await app.service.fetchStatus(orderID, statusToken)
+
+    expect(app.reconciliationLogs).toEqual([{
+      orderID,
+      category: 'query_failure',
+      reason: 'alipay_40004_ACQ.TRADE_NOT_EXIST',
+    }])
+  })
+
+  it('支付宝网络错误只记录固定分类，不记录原始错误内容', async () => {
+    const statusToken = 'status-token-for-network-error'
+    const app = createApp({
+      order: paymentOrder({ statusTokenHash: tokenHash(statusToken) }),
+      queryError: new Error('HttpClient Request error: timeout with sensitive detail'),
+    })
+
+    await app.service.fetchStatus(orderID, statusToken)
+
+    expect(app.reconciliationLogs).toEqual([{
+      orderID,
+      category: 'query_failure',
+      reason: 'network_error',
+    }])
+  })
+
   it('在 RSA2 验签失败时返回 failure，且不会主动查单或签发', async () => {
     const app = createApp({ verifyError: new Error('Invalid Alipay notification signature') })
 
@@ -254,7 +326,7 @@ describe('支付宝异步通知', () => {
     const response = await app.handler(notificationRequest())
 
     expect(await response.text()).toBe('success')
-    expect(app.orders.claims).toEqual([{ orderID, alipayTradeNo: tradeNo, licenseID }])
+    expect(app.orders.claims).toEqual([{ orderID, alipayTradeNo: tradeNo, licenseID, trialBonusDays: 13 }])
     expect(app.signed).toEqual([{ licenseID, expiresAt: Math.floor(new Date('2026-10-14T23:59:59.000Z').getTime() / 1000) }])
   })
 
@@ -265,6 +337,7 @@ describe('支付宝异步通知', () => {
     expect(app.logs).toEqual([{
       orderID,
       category: 'persistence_failure',
+      reason: 'claim_unknown',
     }])
     expect(JSON.stringify(app.logs)).not.toContain('MOSR2.secret')
     expect(JSON.stringify(app.logs)).not.toContain('service-role-jwt')

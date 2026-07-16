@@ -1,4 +1,6 @@
 import { alipayNotificationFailure, createLivePaymentService, type createPaymentService } from '../payment/paymentService'
+import type { Config } from '@netlify/functions'
+
 import { redactPaymentLog } from '../payment/redaction'
 
 type PaymentService = ReturnType<typeof createPaymentService>
@@ -34,6 +36,7 @@ export function createAlipayNotifyHandler(service: PaymentService, logger: Payme
       logger(redactPaymentLog({
         ...(failure.orderID ? { orderID: failure.orderID } : {}),
         category: failure.category,
+        ...(failure.reason ? { reason: failure.reason } : {}),
       }))
       return plainText('failure', 500)
     }
@@ -42,4 +45,8 @@ export function createAlipayNotifyHandler(service: PaymentService, logger: Payme
 
 export default async function handler(request: Request) {
   return createAlipayNotifyHandler(createLivePaymentService())(request)
+}
+
+export const config: Config = {
+  path: '/api/v1/vpn-payment/alipay-notify',
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { AlipayReceiveOnlyGateway } from '../../payment/alipayGateway'
+import { AlipayReceiveOnlyGateway, AlipayTradeQueryError } from '../../payment/alipayGateway'
 import type { PaymentConfig } from '../../payment/config'
 
 type Call = {
@@ -16,16 +16,14 @@ class FakeAlipaySDK {
     return '<form id="alipay"></form>'
   }
 
-  async exec(method: string, params: { bizContent: Record<string, unknown> }, options: { validateSign: boolean }) {
+  async exec(method: string, params: { bizContent: Record<string, unknown> }, options: { validateSign: boolean, requestTimeout: number }) {
     this.calls.push({ method, bizContent: params.bizContent })
-    expect(options).toEqual({ validateSign: true })
+    expect(options).toEqual({ validateSign: true, requestTimeout: 3_000 })
     return {
       code: '10000',
       tradeNo: '2026071622001499999999999999',
       outTradeNo: params.bizContent.out_trade_no,
       totalAmount: '19.80',
-      appId: '2026000000000000',
-      sellerId: '2088000000000000',
       tradeStatus: 'TRADE_SUCCESS',
     }
   }
@@ -105,6 +103,21 @@ describe('payment/alipayGateway', () => {
     const gateway = new AlipayReceiveOnlyGateway(config(), sdk)
 
     expect(() => gateway.verifyNotification(new URLSearchParams({ sign: 'invalid' }))).toThrowError(/signature/i)
+  })
+
+  it('查单业务失败时只暴露安全错误码，不暴露支付宝响应正文', async () => {
+    const sdk = new FakeAlipaySDK()
+    sdk.exec = async () => ({
+      code: '40004',
+      msg: 'Business Failed',
+      subCode: 'ACQ.TRADE_NOT_EXIST',
+      subMsg: 'sensitive response detail',
+    }) as never
+    const gateway = new AlipayReceiveOnlyGateway(config(), sdk)
+
+    await expect(gateway.queryTrade('order-123')).rejects.toEqual(
+      new AlipayTradeQueryError('alipay_40004_ACQ.TRADE_NOT_EXIST'),
+    )
   })
 
   it.each(['trade_no', 'out_trade_no', 'total_amount', 'app_id', 'seller_id'])('验签通过后仍拒绝缺少 %s 的通知', (missingField) => {

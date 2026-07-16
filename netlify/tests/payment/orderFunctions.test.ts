@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto'
 
 import { describe, expect, it } from 'vitest'
 
+import fixture from './fixtures/license-interop.json'
+
 import { createCheckoutHandler } from '../../functions/vpn-payment-checkout'
 import { createOrderStatusHandler } from '../../functions/vpn-payment-order'
 import { createOrdersHandler } from '../../functions/vpn-payment-orders'
@@ -120,9 +122,9 @@ function orderRequest(body: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       clientRequestID: '96b2aa7a-33a9-4ed0-8c7c-79cba94eb6ca',
-      machineCode: 'MOSR-MAC-AAAA-BBBB-CCCC-DDDD-EEEE-FFFF',
-      authorizationRequest: 'MOSRREQ1.confidential-request',
+      authorizationRequest: fixture.request,
       plan: 'month',
+      appVersion: '1.1.0-alipay-sandbox',
       ...body,
     }),
   })
@@ -131,7 +133,7 @@ function orderRequest(body: Record<string, unknown>) {
 async function json(response: Response) {
   expect(response.headers.get('Cache-Control')).toBe('no-store')
   const body = await response.json() as Record<string, unknown>
-  expect(JSON.stringify(body)).not.toContain('MOSRREQ1.confidential-request')
+  expect(JSON.stringify(body)).not.toContain(fixture.request)
   expect(body).not.toHaveProperty('authorizationRequest')
   return body
 }
@@ -146,7 +148,24 @@ describe('payment order functions', () => {
     const response = await app.createOrder(orderRequest({}))
     expect(response.status).toBe(201)
     expect(app.orders.inputs).toHaveLength(1)
-    expect(app.orders.inputs[0]).toMatchObject({ plan: 'month', amountFen: 980 })
+    expect(app.orders.inputs[0]).toMatchObject({
+      machineCode: fixture.payload.machineCode,
+      plan: 'month',
+      amountFen: 980,
+    })
+    await expect(json(response)).resolves.toMatchObject({
+      planName: '30 天',
+      priceText: '9.8 元',
+      status: 'pending',
+    })
+  })
+
+  it('derives the machine code from a valid authorization request and rejects conflicting client fields', async () => {
+    const app = createTestApp()
+
+    expect((await app.createOrder(orderRequest({ authorizationRequest: 'MOSRREQ1.invalid' }))).status).toBe(400)
+    expect((await app.createOrder(orderRequest({ machineCode: fixture.payload.machineCode }))).status).toBe(400)
+    expect(app.orders.inputs).toHaveLength(0)
   })
 
   it('is idempotent by clientRequestID while returning raw tokens only on the first create', async () => {
@@ -192,7 +211,13 @@ describe('payment order functions', () => {
       headers: { Authorization: `Bearer ${created.statusToken}` },
     }))
     expect(response.status).toBe(200)
-    await expect(json(response)).resolves.toMatchObject({ orderID, status: 'pending' })
+    await expect(json(response)).resolves.toMatchObject({
+      orderID,
+      status: 'pending',
+      machineCode: fixture.payload.machineCode,
+      plan: 'month',
+      message: '等待支付宝沙箱付款。',
+    })
   })
 
   it('uses the separate checkout token and AlipayReceiveOnlyGateway only for pending orders', async () => {

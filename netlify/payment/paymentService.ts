@@ -2,12 +2,13 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto'
 
 import { createClient } from '@supabase/supabase-js'
 
-import { AlipayReceiveOnlyGateway } from './alipayGateway'
+import { AlipayReceiveOnlyGateway, AlipayTradeQueryError } from './alipayGateway'
 import { loadPaymentConfig, type PaymentConfig } from './config'
 import { PLAN_CATALOG, type PaymentPlan } from './domain'
 import { PaymentHTTPError } from './http'
 import { decodeLicenseRequest, isValidMachineCode, signLicense as signMOSR2, type SignedLicensePayload } from './licenseCodec'
 import { SupabasePaymentOrderRepository, type PaymentOrder, type PaymentOrderRepository } from './orderRepository'
+import { redactPaymentLog } from './redaction'
 
 const ORDER_LIFETIME_MS = 30 * 60 * 1000
 
@@ -28,6 +29,7 @@ export type AlipayNotificationFailureCategory =
 type AlipayNotificationFailure = {
   category: AlipayNotificationFailureCategory
   orderID?: string
+  reason?: string
 }
 
 class AlipayNotificationError extends Error {
@@ -45,19 +47,22 @@ type PaymentServiceDependencies = {
   gateway: PaymentGateway
   now?: () => Date
   signLicense?: (payload: SignedLicensePayload) => string
+  logReconciliationFailure?: (failure: AlipayNotificationFailure) => void
 }
 
 type CreateOrderInput = {
   clientRequestID: string
-  machineCode: string
   authorizationRequest: string
   plan: PaymentPlan
+  appVersion: string
 }
 
 export type CreatedPaymentOrder = {
   orderID: string
   status: PaymentOrder['status']
   expiresAt: string
+  planName: string
+  priceText: string
   statusToken?: string
   checkoutURL?: string
 }
@@ -66,8 +71,11 @@ export type PaymentOrderStatus = {
   orderID: string
   status: PaymentOrder['status']
   expiresAt: string
+  machineCode: string
+  plan: PaymentPlan
+  message: string
   licenseKey?: string
-  licenseExpiresAt?: string
+  licenseExpiresAt?: number
 }
 
 function hashToken(value: string) {
@@ -89,8 +97,41 @@ function amountFromFen(amountFen: number) {
   return `${Math.floor(amountFen / 100)}.${String(amountFen % 100).padStart(2, '0')}`
 }
 
-function notificationError(category: AlipayNotificationFailureCategory, orderID?: string): never {
-  throw new AlipayNotificationError({ category, ...(orderID ? { orderID } : {}) })
+function unusedTrialDays(authorizationRequest: string, current: Date) {
+  const request = decodeLicenseRequest(authorizationRequest)
+  const currentDay = Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate())
+  const trialStart = new Date(request.trialStartAt * 1000)
+  const trialStartDay = Date.UTC(trialStart.getUTCFullYear(), trialStart.getUTCMonth(), trialStart.getUTCDate())
+  const usedDays = Math.floor((currentDay - trialStartDay) / (24 * 60 * 60 * 1000))
+  return Math.max(0, 15 - Math.min(15, Math.max(0, usedDays)))
+}
+
+function notificationError(category: AlipayNotificationFailureCategory, orderID?: string, reason?: string): never {
+  throw new AlipayNotificationError({ category, ...(orderID ? { orderID } : {}), ...(reason ? { reason } : {}) })
+}
+
+function safePersistenceReason(stage: 'read' | 'claim' | 'complete', error: unknown) {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const code = String(error.code)
+    if (/^[A-Za-z0-9._-]{1,64}$/.test(code) && code !== 'undefined') return `${stage}_${code}`
+  }
+  return `${stage}_unknown`
+}
+
+function safeQueryFailureReason(error: unknown) {
+  if (error instanceof AlipayTradeQueryError) return error.reason
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const code = String(error.code)
+    if (/^[A-Za-z0-9._-]{1,64}$/.test(code)) return `sdk_${code}`
+  }
+  if (error instanceof Error) {
+    if (error.message.startsWith('HttpClient Request error')) return 'network_error'
+    if (error.message.includes('验签失败') || error.message.includes('响应验签失败')) return 'signature_verification_error'
+    if (error.message.includes('支付宝公钥')) return 'public_key_configuration_error'
+    const missing = error.message.match(/^Missing verified Alipay field: ([a-z_]+)$/)?.[1]
+    if (missing) return `missing_${missing}`
+  }
+  return undefined
 }
 
 function equalTrades(
@@ -113,13 +154,35 @@ function stableIssuedAt(order: PaymentOrder, expiresAt: number) {
   return Math.floor(createdAt / 1000)
 }
 
+function statusMessage(status: PaymentOrder['status']) {
+  switch (status) {
+    case 'pending': return '等待支付宝沙箱付款。'
+    case 'paid': return '付款已确认，正在签发授权。'
+    case 'licensed': return '授权已签发。'
+    case 'failed': return '付款失败。'
+    case 'cancelled': return '订单已取消。'
+    case 'expired': return '订单已过期。'
+  }
+}
+
+function priceText(amountFen: number) {
+  return `${(amountFen / 100).toFixed(2).replace(/\.?0+$/, '')} 元`
+}
+
 function publicOrder(order: PaymentOrder): PaymentOrderStatus {
+  const request = decodeLicenseRequest(order.authorizationRequest)
+  const licenseExpiresAt = order.licenseExpiresAt
+    ? Math.floor(new Date(order.licenseExpiresAt).getTime() / 1000)
+    : null
   return {
     orderID: order.id,
     status: order.status,
     expiresAt: order.expiresAt,
+    machineCode: request.machineCode,
+    plan: order.plan,
+    message: statusMessage(order.status),
     ...(order.status === 'licensed' && order.licenseKey ? { licenseKey: order.licenseKey } : {}),
-    ...(order.licenseExpiresAt ? { licenseExpiresAt: order.licenseExpiresAt } : {}),
+    ...(licenseExpiresAt !== null && Number.isFinite(licenseExpiresAt) ? { licenseExpiresAt } : {}),
   }
 }
 
@@ -133,13 +196,83 @@ export function createPaymentService(dependencies: PaymentServiceDependencies) {
     return order
   }
 
+  async function settleSuccessfulTrade(order: PaymentOrder, trade: Awaited<ReturnType<PaymentGateway['queryTrade']>>) {
+    const expectedAmount = amountFromFen(order.amountFen)
+    if (
+      trade.appID !== dependencies.config.alipayAppID
+      || trade.sellerID !== dependencies.config.alipayMerchantPID
+      || trade.orderID !== order.id
+      || trade.tradeStatus !== 'TRADE_SUCCESS'
+      || !isPaymentPlan(order.plan)
+      || order.amountFen !== PLAN_CATALOG[order.plan].amountFen
+      || trade.totalAmount !== expectedAmount
+    ) {
+      return notificationError('payment_mismatch', order.id)
+    }
+    if (order.status === 'licensed' && order.licenseKey) return order
+
+    const requestedLicenseID = order.licenseID ?? randomUUID()
+    let claimed: Awaited<ReturnType<PaymentOrderRepository['claimPaidOrder']>>
+    try {
+      claimed = await dependencies.orders.claimPaidOrder({
+        orderID: order.id,
+        alipayTradeNo: trade.tradeNo,
+        licenseID: requestedLicenseID,
+        trialBonusDays: unusedTrialDays(order.authorizationRequest, now()),
+      })
+    } catch (error) {
+      return notificationError('persistence_failure', order.id, safePersistenceReason('claim', error))
+    }
+
+    if (!claimed.licenseID || !claimed.licenseExpiresAt || claimed.alipayTradeNo !== trade.tradeNo) {
+      return notificationError('persistence_failure', order.id)
+    }
+    if (claimed.status === 'licensed' && claimed.licenseKey) return claimed
+
+    let licenseKey: string
+    try {
+      const request = decodeLicenseRequest(order.authorizationRequest)
+      if (!isValidMachineCode(request.machineCode)) return notificationError('signing_failure', order.id)
+      const expiresAt = Math.floor(new Date(claimed.licenseExpiresAt).getTime() / 1000)
+      if (!Number.isSafeInteger(expiresAt) || expiresAt <= 0) return notificationError('signing_failure', order.id)
+      licenseKey = signLicense({
+        version: 2,
+        licenseID: claimed.licenseID,
+        machineCode: request.machineCode,
+        plan: order.plan,
+        issuedAt: stableIssuedAt(order, expiresAt),
+        expiresAt,
+      })
+    } catch (error) {
+      if (error instanceof AlipayNotificationError) throw error
+      return notificationError('signing_failure', order.id)
+    }
+
+    try {
+      return await dependencies.orders.completeLicense({
+        orderID: order.id,
+        licenseID: claimed.licenseID,
+        licenseKey,
+      })
+    } catch (error) {
+      return notificationError('persistence_failure', order.id, safePersistenceReason('complete', error))
+    }
+  }
+
   return {
     async createOrder(input: CreateOrderInput): Promise<CreatedPaymentOrder> {
       const clientRequestID = requireString(input.clientRequestID, 'clientRequestID')
-      const machineCode = requireString(input.machineCode, 'machineCode')
       const authorizationRequest = requireString(input.authorizationRequest, 'authorizationRequest')
       const plan = requireString(input.plan, 'plan')
+      requireString(input.appVersion, 'appVersion')
       if (!isPaymentPlan(plan)) throw new PaymentHTTPError(400, 'Invalid plan')
+      let machineCode: string
+      try {
+        machineCode = decodeLicenseRequest(authorizationRequest).machineCode
+      } catch {
+        throw new PaymentHTTPError(400, 'Invalid authorization request')
+      }
+      if (!isValidMachineCode(machineCode)) throw new PaymentHTTPError(400, 'Invalid authorization request')
 
       const statusToken = randomBytes(32).toString('base64url')
       const checkoutToken = randomBytes(32).toString('base64url')
@@ -158,21 +291,48 @@ export function createPaymentService(dependencies: PaymentServiceDependencies) {
         expiresAt,
       })
 
-      if (order.id !== generatedID) return publicOrder(order)
+      if (order.id !== generatedID) {
+        return {
+          ...publicOrder(order),
+          planName: PLAN_CATALOG[order.plan].name,
+          priceText: priceText(PLAN_CATALOG[order.plan].amountFen),
+        }
+      }
 
       const checkoutURL = new URL(`/api/v1/vpn-payment/checkout/${encodeURIComponent(order.id)}`, dependencies.config.publicBaseURL)
       checkoutURL.searchParams.set('token', checkoutToken)
       return {
         ...publicOrder(order),
+        planName: PLAN_CATALOG[order.plan].name,
+        priceText: priceText(PLAN_CATALOG[order.plan].amountFen),
         statusToken,
         checkoutURL: checkoutURL.toString(),
       }
     },
 
     async fetchStatus(orderID: string, statusToken: string) {
-      const order = await orderFor(orderID)
+      let order = await orderFor(orderID)
       if (hashToken(statusToken) !== order.statusTokenHash) {
         throw new PaymentHTTPError(403, 'Invalid payment status token')
+      }
+      if (order.status === 'pending' || order.status === 'paid') {
+        try {
+          const queried = await dependencies.gateway.queryTrade(order.id)
+          if (queried.tradeStatus === 'TRADE_SUCCESS') {
+            order = await settleSuccessfulTrade(order, queried)
+          }
+        } catch (error) {
+          const reason = safeQueryFailureReason(error)
+          const failure = error instanceof AlipayNotificationError
+            ? error.failure
+            : {
+                orderID: order.id,
+                category: 'query_failure' as const,
+                ...(reason ? { reason } : {}),
+              }
+          dependencies.logReconciliationFailure?.(failure)
+          // A delayed or unavailable Alipay query must not invalidate the local order.
+        }
       }
       return publicOrder(order)
     },
@@ -233,67 +393,12 @@ export function createPaymentService(dependencies: PaymentServiceDependencies) {
       let order: PaymentOrder | null
       try {
         order = await dependencies.reader.findOrderByID(notification.orderID)
-      } catch {
-        return notificationError('persistence_failure', notification.orderID)
+      } catch (error) {
+        return notificationError('persistence_failure', notification.orderID, safePersistenceReason('read', error))
       }
       if (!order) return notificationError('payment_mismatch', notification.orderID)
 
-      const expectedAmount = amountFromFen(order.amountFen)
-      if (
-        !isPaymentPlan(order.plan)
-        || order.amountFen !== PLAN_CATALOG[order.plan].amountFen
-        || notification.totalAmount !== expectedAmount
-        || queried.totalAmount !== expectedAmount
-      ) {
-        return notificationError('payment_mismatch', order.id)
-      }
-      if (order.status === 'licensed' && order.licenseKey) return
-
-      const requestedLicenseID = order.licenseID ?? randomUUID()
-      let claimed: Awaited<ReturnType<PaymentOrderRepository['claimPaidOrder']>>
-      try {
-        claimed = await dependencies.orders.claimPaidOrder({
-          orderID: order.id,
-          alipayTradeNo: notification.tradeNo,
-          licenseID: requestedLicenseID,
-        })
-      } catch {
-        return notificationError('persistence_failure', order.id)
-      }
-
-      if (!claimed.licenseID || !claimed.licenseExpiresAt || claimed.alipayTradeNo !== notification.tradeNo) {
-        return notificationError('persistence_failure', order.id)
-      }
-      if (claimed.status === 'licensed' && claimed.licenseKey) return
-
-      let licenseKey: string
-      try {
-        const request = decodeLicenseRequest(order.authorizationRequest)
-        if (!isValidMachineCode(request.machineCode)) return notificationError('signing_failure', order.id)
-        const expiresAt = Math.floor(new Date(claimed.licenseExpiresAt).getTime() / 1000)
-        if (!Number.isSafeInteger(expiresAt) || expiresAt <= 0) return notificationError('signing_failure', order.id)
-        licenseKey = signLicense({
-          version: 2,
-          licenseID: claimed.licenseID,
-          machineCode: request.machineCode,
-          plan: order.plan,
-          issuedAt: stableIssuedAt(order, expiresAt),
-          expiresAt,
-        })
-      } catch (error) {
-        if (error instanceof AlipayNotificationError) throw error
-        return notificationError('signing_failure', order.id)
-      }
-
-      try {
-        await dependencies.orders.completeLicense({
-          orderID: order.id,
-          licenseID: claimed.licenseID,
-          licenseKey,
-        })
-      } catch {
-        return notificationError('persistence_failure', order.id)
-      }
+      await settleSuccessfulTrade(order, queried)
     },
   }
 }
@@ -353,5 +458,6 @@ export function createLivePaymentService(env = process.env) {
     orders: SupabasePaymentOrderRepository.fromPaymentConfig(config),
     reader: new SupabasePaymentOrderReader(client),
     gateway: new AlipayReceiveOnlyGateway(config),
+    logReconciliationFailure: (failure) => console.error(redactPaymentLog(failure)),
   })
 }

@@ -39,13 +39,13 @@ export type ClaimedPaidOrder = PaymentOrder & { trialBonusApplied: boolean }
 export interface PaymentOrderStore {
   findOrderByClientRequestID(clientRequestID: string): Promise<Record<string, unknown> | null>
   insertOrder(order: Record<string, unknown>): Promise<Record<string, unknown>>
-  claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }): Promise<Record<string, unknown>>
+  claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }): Promise<Record<string, unknown>>
   completeLicense(input: { orderID: string, licenseID: string, licenseKey: string }): Promise<Record<string, unknown>>
 }
 
 export interface PaymentOrderRepository {
   createOrder(input: PaymentOrderInput): Promise<PaymentOrder>
-  claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }): Promise<ClaimedPaidOrder>
+  claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }): Promise<ClaimedPaidOrder>
   completeLicense(input: { orderID: string, licenseID: string, licenseKey: string }): Promise<PaymentOrder>
 }
 
@@ -133,7 +133,7 @@ export class SupabasePaymentOrderRepository implements PaymentOrderRepository {
     }
   }
 
-  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }) {
+  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }) {
     try {
       const row = await this.store.claimPaidOrder(input)
       return { ...toPaymentOrder(row), trialBonusApplied: Boolean(row.trial_bonus_applied) }
@@ -166,11 +166,12 @@ class SupabaseStore implements PaymentOrderStore {
     return result.data
   }
 
-  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }) {
+  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }) {
     const result = await this.client.rpc('claim_vpn_payment_order', {
       p_order_id: input.orderID,
       p_alipay_trade_no: input.alipayTradeNo,
       p_license_id: input.licenseID,
+      p_trial_bonus_days: input.trialBonusDays,
     }).single() as SupabaseResult
     if (result.error) throw result.error
     if (!result.data) throw new Error('Payment order claim returned no row')

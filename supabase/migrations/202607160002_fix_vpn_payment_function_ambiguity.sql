@@ -1,34 +1,3 @@
-create table public.vpn_payment_orders (
-  id uuid primary key,
-  client_request_id uuid not null unique,
-  status_token_hash text not null,
-  checkout_token_hash text not null,
-  machine_code_hash text not null,
-  authorization_request text not null,
-  plan text not null check (plan in ('ten', 'month', 'quarter', 'year')),
-  amount_fen integer not null check (amount_fen > 0),
-  status text not null check (status in ('pending', 'paid', 'licensed', 'failed', 'cancelled', 'expired')),
-  alipay_trade_no text unique,
-  license_id uuid,
-  license_key text,
-  license_expires_at timestamptz,
-  created_at timestamptz not null default now(),
-  paid_at timestamptz,
-  licensed_at timestamptz,
-  expires_at timestamptz not null
-);
-
-create table public.vpn_machine_trial_ledger (
-  machine_code_hash text primary key,
-  trial_bonus_consumed boolean not null default false,
-  latest_license_expires_at timestamptz,
-  first_issued_at timestamptz,
-  updated_at timestamptz not null default now()
-);
-
-alter table public.vpn_payment_orders enable row level security;
-alter table public.vpn_machine_trial_ledger enable row level security;
-
 create or replace function public.claim_vpn_payment_order(
   p_order_id uuid,
   p_alipay_trade_no text,
@@ -178,8 +147,6 @@ begin
 end;
 $$;
 
-revoke all on table public.vpn_payment_orders from public, anon, authenticated;
-revoke all on table public.vpn_machine_trial_ledger from public, anon, authenticated;
 revoke all on function public.claim_vpn_payment_order(uuid, text, uuid, integer) from public, anon, authenticated;
 revoke all on function public.complete_vpn_payment_license(uuid, uuid, text) from public, anon, authenticated;
 grant execute on function public.claim_vpn_payment_order(uuid, text, uuid, integer) to service_role;

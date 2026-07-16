@@ -1,3 +1,5 @@
+import type { Config } from '@netlify/functions'
+
 import { pathParameter, paymentError, paymentHTML, requireMethod } from '../payment/http'
 import { createLivePaymentService, type createPaymentService } from '../payment/paymentService'
 
@@ -18,4 +20,8 @@ export function createCheckoutHandler(service: PaymentService) {
 
 export default async function handler(request: Request) {
   return createCheckoutHandler(createLivePaymentService())(request)
+}
+
+export const config: Config = {
+  path: '/api/v1/vpn-payment/checkout/:orderID',
 }

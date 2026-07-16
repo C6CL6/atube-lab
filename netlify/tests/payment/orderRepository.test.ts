@@ -29,7 +29,7 @@ class MemoryStore implements PaymentOrderStore {
     return order
   }
 
-  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string }) {
+  async claimPaidOrder(input: { orderID: string, alipayTradeNo: string, licenseID: string, trialBonusDays: number }) {
     const order = this.orders.find((candidate) => candidate.id === input.orderID)
     if (!order) throw new Error('order not found')
     const claimedByAnother = this.orders.find((candidate) => candidate.alipay_trade_no === input.alipayTradeNo && candidate.id !== input.orderID)
@@ -41,7 +41,7 @@ class MemoryStore implements PaymentOrderStore {
 
     const machineHash = String(order.machine_code_hash)
     const ledger = this.trialLedger.get(machineHash) ?? { trialBonusConsumed: false }
-    const trialBonusApplied = !ledger.trialBonusConsumed
+    const trialBonusApplied = !ledger.trialBonusConsumed && input.trialBonusDays > 0
     ledger.trialBonusConsumed = true
     this.trialLedger.set(machineHash, ledger)
 
@@ -105,12 +105,14 @@ describe('payment/orderRepository', () => {
       orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5',
       alipayTradeNo: '2026071622001499999999999999',
       licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544',
+      trialBonusDays: 15,
     })
 
     await expect(repository.claimPaidOrder({
       orderID: 'db4bfae1-0d6f-48e4-9b87-7a2e7c56178f',
       alipayTradeNo: '2026071622001499999999999999',
       licenseID: 'e7569d11-8a21-4321-9b47-2df2eeed2af0',
+      trialBonusDays: 15,
     })).rejects.toThrow(/Alipay trade conflict/)
   })
 
@@ -123,8 +125,8 @@ describe('payment/orderRepository', () => {
       clientRequestID: '41349a34-318c-4ce7-9231-1132038cf574',
     }))
 
-    const first = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
-    const second = await repository.claimPaidOrder({ orderID: 'db4bfae1-0d6f-48e4-9b87-7a2e7c56178f', alipayTradeNo: 'trade-2', licenseID: 'e7569d11-8a21-4321-9b47-2df2eeed2af0' })
+    const first = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544', trialBonusDays: 15 })
+    const second = await repository.claimPaidOrder({ orderID: 'db4bfae1-0d6f-48e4-9b87-7a2e7c56178f', alipayTradeNo: 'trade-2', licenseID: 'e7569d11-8a21-4321-9b47-2df2eeed2af0', trialBonusDays: 15 })
 
     expect(first.trialBonusApplied).toBe(true)
     expect(second.trialBonusApplied).toBe(false)
@@ -136,7 +138,7 @@ describe('payment/orderRepository', () => {
     await repository.createOrder(createOrder())
     Object.assign(store.orders[0], { status: 'paid', alipay_trade_no: 'trade-1', license_id: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
 
-    const claimed = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544' })
+    const claimed = await repository.claimPaidOrder({ orderID: '8e06565f-d920-4f2a-bde2-894c7cbbd4d5', alipayTradeNo: 'trade-1', licenseID: 'c3d4fb70-2429-45e9-a3c1-bcf883bab544', trialBonusDays: 15 })
     const completed = await repository.completeLicense({ orderID: claimed.id, licenseID: claimed.licenseID, licenseKey: 'MOSR2.payload.signature' })
 
     expect(claimed.status).toBe('paid')
