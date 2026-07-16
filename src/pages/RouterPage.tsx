@@ -3,7 +3,7 @@ import { Activity, Download, Network, Power, Settings2, ShieldCheck, Wifi, X } f
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 
-const checksum = "c73338010ba9cbd1d0d3dd60c074365598fb61458a651c3ea0139cc66d4f81fd";
+const checksum = "3b7a4638c58a91782f7e8c6ca3be915a95d4adeb565471885814041089e10431";
 const screenshots = [
   { src: "/images/router/dashboard.png", alt: "Mac OS软路由仪表盘与运行状态", title: "运行仪表盘", description: "VPN 出口、内网地址、流量与经过网关的设备一目了然。" },
   { src: "/images/router/topology.png", alt: "Mac OS软路由网络拓扑图", title: "网络拓扑", description: "直观看到设备、内网、转发、VPN 与互联网之间的路径。" },
@@ -134,7 +134,8 @@ export function RouterPage() {
                 <Download size={17} aria-hidden="true" /> 下载 macOS 版
               </a>
               <p className="router-download__support">
-                <strong>测试期间免费使用</strong>
+                <strong>v1.1.0 手动收费版</strong>
+                <span>每台 Mac 免费试用 15 天，试用结束后需要购买机器绑定授权。</span>
                 <span>使用中如有任何问题，请联系作者 <a href="mailto:zhenlu139@gmail.com">zhenlu139@gmail.com</a>。</span>
               </p>
               <p><strong>SHA-256</strong><code>{checksum}</code></p>

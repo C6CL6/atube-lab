@@ -17,7 +17,7 @@ describe("Mac OS软路由页面", () => {
       expect(link).toHaveAttribute("href", "/downloads/Mac-OS软路由.dmg");
     });
     expect(
-      screen.getByText("c73338010ba9cbd1d0d3dd60c074365598fb61458a651c3ea0139cc66d4f81fd")
+      screen.getByText("3b7a4638c58a91782f7e8c6ca3be915a95d4adeb565471885814041089e10431")
     ).toBeInTheDocument();
     expect(screen.getByText(/Apple 公证/)).toBeInTheDocument();
   });
@@ -34,7 +34,8 @@ describe("Mac OS软路由页面", () => {
     expect(screen.getAllByText("启动软路由")).toHaveLength(2);
     expect(screen.getByText("192.168.2.66（示例）")).toBeInTheDocument();
     expect(screen.getByText("8.8.8.8 / 1.1.1.1")).toBeInTheDocument();
-    expect(screen.getByText(/测试期间免费使用/)).toBeInTheDocument();
+    expect(screen.getByText("v1.1.0 手动收费版")).toBeInTheDocument();
+    expect(screen.getByText(/免费试用 15 天/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "zhenlu139@gmail.com" })).toHaveAttribute("href", "mailto:zhenlu139@gmail.com");
   });
 
