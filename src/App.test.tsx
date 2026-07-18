@@ -21,6 +21,19 @@ describe("官网路由", () => {
     expect(screen.getAllByText("A-tube的灵感实验室").length).toBeGreaterThan(0);
   });
 
+  it("数独页面提供 iPhone 和 iPad 安装版入口", () => {
+    render(
+      <MemoryRouter initialEntries={["/sudoku"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("link", { name: /安装 iPhone\/iPad 版/ })).toHaveAttribute(
+      "href",
+      "https://apps.apple.com/app/id6789603052",
+    );
+  });
+
   it("可以通过 /snake 打开贪吃蛇游戏页面", () => {
     render(
       <MemoryRouter initialEntries={["/snake"]}>
@@ -51,8 +64,19 @@ describe("官网路由", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: "16型人格倾向测试" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "性格测验中心" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "性格测试" })).toHaveAttribute("href", "/personality");
+  });
+
+  it("临时访问 /learning 时回到首页基准内容", () => {
+    render(
+      <MemoryRouter initialEntries={["/learning"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "AI 学习书房" })).not.toBeInTheDocument();
   });
 
   it("临时访问 /guandan 时回到首页基准内容", () => {
@@ -64,6 +88,17 @@ describe("官网路由", () => {
 
     expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "在线掼蛋" })).not.toBeInTheDocument();
+  });
+
+  it("旧创作手记链接回到首页", () => {
+    render(
+      <MemoryRouter initialEntries={["/notes/example"]}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "创作手记" })).not.toBeInTheDocument();
   });
 
   it("进入正式数独游戏后隐藏官网导航和页脚，释放游戏空间", () => {

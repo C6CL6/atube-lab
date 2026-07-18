@@ -28,6 +28,20 @@ export function LoginScreen({ users, onLogin, onCreate, onDelete, onShowRanking 
           <p className="eyebrow">大字 · 清晰 · 无需密码</p>
           <h1>欢迎来到数独</h1>
           <p className="lead">选择您的名字继续游戏，或者创建一位新玩家。</p>
+          <div className="app-store-card" aria-label="A-tube 数独 iOS 安装版">
+            <div>
+              <strong>iPhone / iPad 原生版已经上架</strong>
+              <span>免费安装，和网页版共用在线排行榜。</span>
+            </div>
+            <a
+              className="app-store-link"
+              href="https://apps.apple.com/app/id6789603052"
+              target="_blank"
+              rel="noreferrer"
+            >
+              安装 iPhone/iPad 版
+            </a>
+          </div>
           {users.length > 0 ? (
             <div className="profile-grid">
               {users.map((user) => (

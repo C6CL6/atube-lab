@@ -34,6 +34,11 @@
 .sudoku-app .login-layout { min-height: calc(100vh - 126px); display: grid; grid-template-columns: 1.25fr .75fr; gap: 70px; align-items: center; padding: 60px 0; }
 .sudoku-app .login-layout h1 { font-size: clamp(42px, 5vw, 70px); line-height: 1.05; margin: 0 0 20px; }
 .sudoku-app .lead { font-size: 22px; color: var(--muted); line-height: 1.7; }
+.sudoku-app .app-store-card { margin-top: 28px; max-width: 620px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 2px solid rgba(43,39,34,.2); border-left: 6px solid var(--brick); background: rgba(251,248,241,.82); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 22px rgba(43,39,34,.08); }
+.sudoku-app .app-store-card strong { display: block; font-family: "Songti SC", STSong, serif; font-size: 24px; margin-bottom: 6px; }
+.sudoku-app .app-store-card span { display: block; color: var(--muted); font-size: 16px; line-height: 1.45; }
+.sudoku-app .app-store-link { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; border-radius: 999px; background: var(--ink); color: #fff8ea; text-decoration: none; font-size: 17px; font-weight: 900; box-shadow: 0 4px 0 rgba(43,39,34,.18); }
+.sudoku-app .app-store-link:hover { background: var(--brick-dark); }
 .sudoku-app .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 34px; }
 .sudoku-app .profile-card { position: relative; }
 .sudoku-app .profile-login { width: 100%; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; border: 2px solid var(--ink); border-radius: 8px; background: var(--surface); box-shadow: 0 5px 0 rgba(43,39,34,.16); cursor: pointer; }
@@ -304,6 +309,8 @@
 }
 
 @media (max-width: 430px) and (orientation: portrait) {
+  .sudoku-app .app-store-card { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .sudoku-app .app-store-link { width: 100%; }
   .sudoku-app .brand-header { min-height: 58px; }
   .sudoku-app .brand-lockup { font-size: 14px; }
   .sudoku-app .brand-mark { width: 32px; height: 32px; font-size: 19px; }
