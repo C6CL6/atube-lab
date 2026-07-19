@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mbtiQuestions } from "./questions";
-import { scoreMbtiAnswers } from "./scoring";
+import { discQuestions, mbtiQuestions } from "./questions";
+import { scoreDiscAnswers, scoreMbtiAnswers } from "./scoring";
 import type { AnswerMap } from "./types";
 
 describe("16型人格倾向评分", () => {
@@ -56,5 +56,72 @@ describe("16型人格倾向评分", () => {
     expect(result.typeCode).toBe("ESTJ");
     expect(result.dimensions.EI.strength).toBe("balanced");
     expect(result.dimensions.SN.note).toContain("倾向不明显");
+  });
+});
+
+describe("五型动物人格测验评分", () => {
+  it("题库包含48道题，并平均覆盖四个DISC维度", () => {
+    expect(discQuestions).toHaveLength(48);
+    expect(new Set(discQuestions.map((question) => question.dimension))).toEqual(
+      new Set(["D", "I", "S", "C"]),
+    );
+
+    for (const dimension of ["D", "I", "S", "C"]) {
+      expect(discQuestions.filter((question) => question.dimension === dimension)).toHaveLength(12);
+    }
+  });
+
+  it("题目采用左右偏好取舍，避免正向自评诱导", () => {
+    const leadingPhrases = ["我会", "我愿意", "我擅长", "我喜欢", "我适合", "我容易", "我倾向于", "我更信任", "主动"];
+    const promptText = discQuestions.map((question) => question.prompt).join("\n");
+
+    expect(discQuestions.every((question) => question.leftLabel.length >= 6)).toBe(true);
+    expect(discQuestions.every((question) => question.rightLabel.length >= 6)).toBe(true);
+    expect(discQuestions.every((question) => question.example.startsWith("例如："))).toBe(true);
+
+    for (const phrase of leadingPhrases) {
+      expect(promptText).not.toContain(phrase);
+    }
+  });
+
+  it("根据四个独立维度生成主类型、复合类型和百分比", () => {
+    const answers: AnswerMap = Object.fromEntries(
+      discQuestions.map((question) => [
+        question.id,
+        question.dimension === "D" ? 2 : question.dimension === "C" ? 1 : -1,
+      ]),
+    ) as AnswerMap;
+
+    const result = scoreDiscAnswers(discQuestions, answers);
+
+    expect(result.typeCode).toBe("DC");
+    expect(result.dimensions.D.percent).toBe(100);
+    expect(result.dimensions.C.percent).toBeGreaterThan(result.dimensions.I.percent);
+    expect(result.dimensions.D.note).toContain("高");
+  });
+
+  it("全部中间答案时生成混合型，并标记倾向不明显", () => {
+    const answers = Object.fromEntries(discQuestions.map((question) => [question.id, 0])) as AnswerMap;
+
+    const result = scoreDiscAnswers(discQuestions, answers);
+
+    expect(result.typeCode).toBe("MIX");
+    expect(result.dimensions.D.strength).toBe("balanced");
+    expect(result.dimensions.S.note).toContain("倾向不明显");
+  });
+
+  it("第一第二名接近但第三名拉开时仍生成复合类型，不误判混合型", () => {
+    const answers: AnswerMap = Object.fromEntries(
+      discQuestions.map((question) => [
+        question.id,
+        question.dimension === "D" ? 1 : question.dimension === "C" ? 1 : question.dimension === "I" ? 0 : -1,
+      ]),
+    ) as AnswerMap;
+
+    const result = scoreDiscAnswers(discQuestions, answers);
+
+    expect(result.dimensions.D.percent).toBe(result.dimensions.C.percent);
+    expect(result.dimensions.D.percent - result.dimensions.I.percent).toBeGreaterThanOrEqual(8);
+    expect(result.typeCode).toBe("DC");
   });
 });

@@ -4,6 +4,7 @@ import { DifficultyStartScreen } from './components/DifficultyStartScreen'
 import { LoginScreen } from './components/LoginScreen'
 import { RankingModal } from './components/RankingModal'
 import { fetchCloudRecords, submitCloudRecord } from './api/cloudRecords'
+import { getPlayLimitStatus, addPlaySecond, normalizePlayLimitState } from './domain/playLimits'
 import { rankRecords, topRankingRecords } from './domain/ranking'
 import type { AppData, BoardStyle, Difficulty, GameRecord, GameState } from './domain/types'
 import { createGame } from './game/createGame'
@@ -22,7 +23,10 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   const [playInCurrentWindow, setPlayInCurrentWindow] = useState(gameWindowMode)
   const [cloudRecords, setCloudRecords] = useState<GameRecord[] | null>(null)
   const [cloudUnavailable, setCloudUnavailable] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
   const activeUser = data.users.find((user) => user.id === data.activeUserId)
+  const playLimit = normalizePlayLimitState(data.playLimit, now)
+  const playLimitStatus = getPlayLimitStatus(playLimit, now)
   const currentGame = activeUser ? data.games[activeUser.id] : undefined
 
   const persist = useCallback((next: AppData) => {
@@ -77,6 +81,11 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
   useEffect(() => {
     void refreshCloudRecords()
   }, [refreshCloudRecords])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     onPlayingChange?.(Boolean(activeUser && currentGame && playInCurrentWindow))
@@ -223,6 +232,14 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
     onReturnHome?.()
   }
 
+  const trackPlaySecond = (tickNow: number) => {
+    setData((current) => {
+      const next = { ...current, playLimit: addPlaySecond(normalizePlayLimitState(current.playLimit, tickNow), tickNow) }
+      saveAppData(next)
+      return next
+    })
+  }
+
   return (
     <>
       <GameScreen
@@ -236,6 +253,8 @@ export function SudokuApp({ gameWindowMode = false, onOpenGameWindow, onPlayingC
         onExitGame={() => exitGame(currentGame)}
         isGameWindow={gameWindowMode}
         onReturnHome={() => returnHome(currentGame)}
+        playLimitStatus={playLimitStatus}
+        onPlaySecond={trackPlaySecond}
       />
       {showRanking ? (
         <RankingModal

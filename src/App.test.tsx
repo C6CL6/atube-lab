@@ -21,51 +21,43 @@ describe("官网路由", () => {
     expect(screen.getAllByText("A-tube的灵感实验室").length).toBeGreaterThan(0);
   });
 
-  it("数独页面提供 iPhone 和 iPad 安装版入口", () => {
+  it("数独页面说明 iOS 安装版适用于境外 App Store", () => {
     render(
       <MemoryRouter initialEntries={["/sudoku"]}>
         <App />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("link", { name: /安装 iPhone\/iPad 版/ })).toHaveAttribute(
+    expect(screen.getByText("境外 App Store 可安装。")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "用户名" })).toHaveAttribute("placeholder", "例如：阿土伯");
+    expect(screen.getByRole("link", { name: /免费下载 iPhone\/iPad 版/ })).toHaveAttribute(
       "href",
       "https://apps.apple.com/app/id6789603052",
     );
   });
 
-  it("可以通过 /snake 打开贪吃蛇游戏页面", () => {
+  it("旧 /snake 和 /personality 访问回到首页，不再暴露模块入口", () => {
     render(
       <MemoryRouter initialEntries={["/snake"]}>
         <App />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: "选择玩家" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "开始游戏" })).toBeInTheDocument();
-    expect(screen.getByLabelText("用户名")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "贪吃蛇" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /进入贪吃蛇/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "性格测试" })).not.toBeInTheDocument();
   });
 
-  it("首页提供贪吃蛇游戏入口", () => {
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <App />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByRole("heading", { name: "贪吃蛇" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /进入贪吃蛇/ })).toHaveAttribute("href", "/snake");
-  });
-
-  it("可以通过 /personality 打开性格测试页面，导航也提供入口", () => {
+  it("旧 /personality 访问也回到首页", () => {
     render(
       <MemoryRouter initialEntries={["/personality"]}>
         <App />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { level: 1, name: "性格测验中心" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "性格测试" })).toHaveAttribute("href", "/personality");
+    expect(screen.getByRole("heading", { name: /让算法参与创作/ })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "性格测验中心" })).not.toBeInTheDocument();
   });
 
   it("临时访问 /learning 时回到首页基准内容", () => {

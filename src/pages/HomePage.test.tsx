@@ -48,7 +48,17 @@ describe("首页音乐专题入口", () => {
     expect(screen.queryByText(/矛盾文学奖/)).not.toBeInTheDocument();
   });
 
-  it("首页提供数独游戏入口", () => {
+  it("首页显示《主角》150集已完整发布", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("link", { name: /《主角》/ })).toHaveTextContent("已完结 · 150 集完整发布");
+  });
+
+  it("首页提供数独游戏入口，并删除测验和贪吃蛇模块", () => {
     render(
       <MemoryRouter>
         <HomePage />
@@ -57,5 +67,45 @@ describe("首页音乐专题入口", () => {
 
     expect(screen.getByRole("heading", { name: "数独挑战" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /进入数独游戏/ })).toHaveAttribute("href", "/sudoku");
+    expect(screen.queryByRole("heading", { name: "性格测验中心" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /进入性格测试/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "贪吃蛇" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /进入贪吃蛇/ })).not.toBeInTheDocument();
+  });
+
+  it("首页提供 Mac OS 软路由详情入口", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "Mac OS软路由" })).toBeInTheDocument();
+    expect(screen.getByText("将 Mac 作为家庭网络的软路由管理终端，集中查看状态并控制既有运行时。")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "查看软路由详情" })).toHaveAttribute("href", "/router");
+  });
+
+  it("不再展示创作手记模块", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole("heading", { name: "创作手记" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "创作手记" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/创作手记/)).not.toBeInTheDocument();
+  });
+
+  it("不再展示AI学习模块", () => {
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole("heading", { name: "AI 学习书房" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /进入学习专区/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/AI LEARNING ARCHIVE/)).not.toBeInTheDocument();
   });
 });

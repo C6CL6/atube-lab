@@ -133,6 +133,12 @@
   min-width: 0;
 }
 
+.personality-test-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .personality-card {
   display: flex;
   align-items: center;
@@ -316,6 +322,10 @@
   background: var(--walnut);
 }
 
+.personality-bar--single .personality-bar__track span {
+  background: var(--red);
+}
+
 .personality-bar p {
   margin: 8px 0 0;
   color: var(--muted);
@@ -393,6 +403,7 @@
     flex-direction: column;
   }
 
+  .personality-test-grid,
   .personality-upcoming,
   .personality-answer-grid {
     grid-template-columns: 1fr;

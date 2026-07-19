@@ -2,11 +2,9 @@ import { ArrowRight, ExternalLink, Play } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PlayerModal } from "../components/PlayerModal";
-import { LearningMark } from "../components/LearningMark";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { audioStories, musicWorks } from "../data/works";
-import { notes } from "../data/notes";
 import { coverUrl } from "../lib/assets";
 import type { Work } from "../types/work";
 
@@ -33,9 +31,7 @@ export function HomePage() {
           <div className="hero__copy">
             <p className="eyeline">SOUND · STORY · ARTIFICIAL INTELLIGENCE</p>
             <h1>让算法参与创作，<br />让作品保留人的判断。</h1>
-            <p className="hero__intro">
-              这里收藏原创 AI 歌曲、AI有声小说，以及从一句灵感走到成品的创作手记。
-            </p>
+            <p className="hero__intro">这里收藏原创 AI 歌曲、AI有声小说，以及围绕 AI 工具与创作流程的实验。</p>
             <div className="hero__actions">
               <Link className="button button--primary" to="/music">进入AI歌曲专题</Link>
               <a className="text-link" href="#about">认识实验室 <ArrowRight size={16} /></a>
@@ -63,7 +59,7 @@ export function HomePage() {
                 <img src={coverUrl("protagonist-editorial.png")} alt="" />
                 <span className="story-panel__shade" />
                 <span className="story-panel__content">
-                  <small>持续更新 · {audioStories.filter((work) => work.series === "主角").length} 集</small>
+                  <small>已完结 · 150 集完整发布</small>
                   <strong>《主角》</strong>
                   <small>陈彦 · 第十届茅盾文学奖获奖小说</small>
                   <span>进入专题与分集目录 <ArrowRight size={17} /></span>
@@ -114,34 +110,6 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="learning-entry">
-          <div className="page-shell learning-entry__inner">
-            <LearningMark size={68} />
-            <div>
-              <p className="eyeline">AI LEARNING ARCHIVE</p>
-              <h2>AI 学习书房</h2>
-            </div>
-            <Link className="button button--ghost" to="/learning">
-              进入学习专区 <ArrowRight size={16} />
-            </Link>
-          </div>
-        </section>
-
-        <section className="personality-entry">
-          <div className="page-shell personality-entry__inner">
-            <div>
-              <p className="eyeline">PERSONALITY LAB</p>
-              <h2>16型人格倾向测试</h2>
-              <p>
-                60道中文题，参考四维人格框架观察能量来源、信息处理、决策方式和生活节奏。
-              </p>
-            </div>
-            <Link className="button button--primary" to="/personality">
-              进入性格测试 <ArrowRight size={16} />
-            </Link>
-          </div>
-        </section>
-
         <section className="sudoku-entry">
           <div className="page-shell sudoku-entry__inner">
             <div>
@@ -157,36 +125,14 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="snake-entry">
-          <div className="page-shell snake-entry__inner">
+        <section className="router-entry">
+          <div className="page-shell router-entry__inner">
             <div>
-              <p className="eyeline">ARCADE GAME</p>
-              <h2>贪吃蛇</h2>
-              <p>
-                从桌面版移植到网页的经典小游戏：键盘控制、速度递进、浏览器本机最高分。
-              </p>
+              <p className="eyeline">MAC UTILITY</p>
+              <h2>Mac OS软路由</h2>
+              <p>将 Mac 作为家庭网络的软路由管理终端，集中查看状态并控制既有运行时。</p>
             </div>
-            <Link className="button button--ghost" to="/snake">
-              进入贪吃蛇 <ArrowRight size={16} />
-            </Link>
-          </div>
-        </section>
-
-        <section className="section section--notes" id="notes">
-          <div className="page-shell notes-layout">
-            <div className="notes-intro">
-              <p className="eyeline">CREATIVE NOTES</p>
-              <h2>创作手记</h2>
-            </div>
-            <div className="notes-list">
-              {notes.map((note) => (
-                <Link key={note.slug} to={`/notes/${note.slug}`} className="note-row">
-                  <span>{note.number}</span>
-                  <strong>{note.title}</strong>
-                  <ArrowRight size={18} />
-                </Link>
-              ))}
-            </div>
+            <Link className="button button--primary" to="/router">查看软路由详情</Link>
           </div>
         </section>
       </main>

@@ -1,13 +1,10 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { HomePage } from "./pages/HomePage";
-import { LearningPage } from "./pages/LearningPage";
 import { MusicPage } from "./pages/MusicPage";
-import { NotePage } from "./pages/NotePage";
-import { PersonalityPage } from "./pages/PersonalityPage";
+import { RouterPage } from "./pages/RouterPage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { SudokuPage } from "./pages/SudokuPage";
-import { SnakePage } from "./pages/SnakePage";
 
 function ScrollManager() {
   const location = useLocation();
@@ -28,14 +25,16 @@ export default function App() {
       <ScrollManager />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/learning" element={<LearningPage />} />
+        <Route path="/learning" element={<Navigate to="/" replace />} />
         <Route path="/music" element={<MusicPage />} />
-        <Route path="/personality" element={<PersonalityPage />} />
+        <Route path="/personality" element={<Navigate to="/" replace />} />
         <Route path="/sudoku" element={<SudokuPage />} />
-        <Route path="/snake" element={<SnakePage />} />
+        <Route path="/router" element={<RouterPage />} />
+        <Route path="/snake" element={<Navigate to="/" replace />} />
         <Route path="/guandan" element={<Navigate to="/" replace />} />
+        <Route path="/notes" element={<Navigate to="/" replace />} />
+        <Route path="/notes/:slug" element={<Navigate to="/" replace />} />
         <Route path="/series/:slug" element={<SeriesPage />} />
-        <Route path="/notes/:slug" element={<NotePage />} />
       </Routes>
     </>
   );

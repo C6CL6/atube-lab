@@ -24,42 +24,44 @@ export function LoginScreen({ users, onLogin, onCreate, onDelete, onShowRanking 
     <div className="page-shell">
       <BrandHeader onShowRanking={onShowRanking} />
       <main className="login-layout">
-        <section>
+        <section className="login-intro">
           <p className="eyebrow">大字 · 清晰 · 无需密码</p>
           <h1>欢迎来到数独</h1>
           <p className="lead">选择您的名字继续游戏，或者创建一位新玩家。</p>
-          <div className="app-store-card" aria-label="A-tube 数独 iOS 安装版">
-            <div>
-              <strong>iPhone / iPad 原生版已经上架</strong>
-              <span>免费安装，和网页版共用在线排行榜。</span>
+          <div className="login-card-stack">
+            <div className="app-store-card" aria-label="A-tube 数独 iOS 安装版">
+              <div>
+                <strong>iPhone / iPad 版已经上架</strong>
+                <span>境外 App Store 可安装。</span>
+              </div>
+              <a
+                className="app-store-link"
+                href="https://apps.apple.com/app/id6789603052"
+                target="_blank"
+                rel="noreferrer"
+              >
+                免费下载 iPhone/iPad 版
+              </a>
             </div>
-            <a
-              className="app-store-link"
-              href="https://apps.apple.com/app/id6789603052"
-              target="_blank"
-              rel="noreferrer"
-            >
-              安装 iPhone/iPad 版
-            </a>
+            {users.length > 0 ? (
+              <div className="profile-grid" aria-label="已有玩家">
+                {users.map((user) => (
+                  <div className="profile-card" key={user.id}>
+                    <button className="profile-login" onClick={() => onLogin(user.id)} aria-label={`${user.name}，进入游戏`}>
+                      <span className="profile-avatar" style={{ background: user.avatarColor }}>{user.name.slice(0, 1)}</span>
+                      <strong>{user.name}</strong>
+                      <span>进入游戏</span>
+                    </button>
+                    <button className="delete-profile" onClick={() => onDelete(user.id)}>删除</button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
-          {users.length > 0 ? (
-            <div className="profile-grid">
-              {users.map((user) => (
-                <div className="profile-card" key={user.id}>
-                  <button className="profile-login" onClick={() => onLogin(user.id)} aria-label={`${user.name}，进入游戏`}>
-                    <span className="profile-avatar" style={{ background: user.avatarColor }}>{user.name.slice(0, 1)}</span>
-                    <strong>{user.name}</strong>
-                    <span>进入游戏</span>
-                  </button>
-                  <button className="delete-profile" onClick={() => onDelete(user.id)}>删除</button>
-                </div>
-              ))}
-            </div>
-          ) : null}
         </section>
 
         <form className="create-profile" onSubmit={submit}>
-          <h2>{users.length > 0 ? '新玩家' : '创建用户名'}</h2>
+          <h2>新玩家</h2>
           <p>不用密码，下次直接点击姓名即可。</p>
           <label htmlFor="username">用户名</label>
           <input
@@ -70,7 +72,7 @@ export function LoginScreen({ users, onLogin, onCreate, onDelete, onShowRanking 
               setName(event.target.value)
               setError('')
             }}
-            placeholder="例如：王阿姨"
+            placeholder="例如：阿土伯"
             autoComplete="off"
           />
           {error ? <p className="form-error" role="alert">{error}</p> : null}

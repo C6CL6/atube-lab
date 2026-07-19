@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyCorrectMove, applyMistake, calculateCompletionBonus, resetStreak } from '../domain/scoring'
+import type { PlayLimitStatus } from '../domain/playLimits'
 import type { Difficulty, GameState, UserProfile } from '../domain/types'
 
 type Completion = {
@@ -20,6 +21,8 @@ type Props = {
   onExitGame: () => void
   isGameWindow?: boolean
   onReturnHome: () => void
+  playLimitStatus?: PlayLimitStatus
+  onPlaySecond?: (now: number) => void
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: '新手', medium: '高手', hard: '专家' }
@@ -63,7 +66,7 @@ function newlyCompletedCells(index: number, before: number[], after: number[]) {
   ]
 }
 
-export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome }: Props) {
+export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwitchUser, onShowRanking, onExitGame, isGameWindow = false, onReturnHome, playLimitStatus = { kind: 'ok' }, onPlaySecond }: Props) {
   const [wrongCell, setWrongCell] = useState<number | null>(null)
   const [flashingCells, setFlashingCells] = useState<number[]>([])
   const [scorePops, setScorePops] = useState<Array<{ id: number; index: number; points: number }>>([])
@@ -72,14 +75,16 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
   const flashTimer = useRef<number | null>(null)
   const scorePopTimers = useRef<number[]>([])
   const scorePopId = useRef(0)
+  const playBlocked = playLimitStatus.kind !== 'ok'
 
   useEffect(() => {
-    if (game.paused || game.completed) return
+    if (game.paused || game.completed || playBlocked) return
     const timer = window.setInterval(() => {
+      onPlaySecond?.(Date.now())
       onChange({ ...game, elapsedSeconds: game.elapsedSeconds + 1 })
     }, 1000)
     return () => window.clearInterval(timer)
-  }, [game, onChange])
+  }, [game, onChange, onPlaySecond, playBlocked])
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -155,7 +160,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
 
   const enterNumber = (value: number) => {
     const index = game.selectedIndex
-    if (index === null || game.paused || game.completed || game.puzzle[index] !== 0) return
+    if (index === null || game.paused || game.completed || playBlocked || game.puzzle[index] !== 0) return
     if (value !== game.solution[index]) {
       const score = applyMistake(game.score)
       setWrongCell(index)
@@ -211,7 +216,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
     const index = game.selectedIndex !== null && game.values[game.selectedIndex] === 0
       ? game.selectedIndex
       : game.values.findIndex((value) => value === 0)
-    if (index < 0 || game.score.frozen) return
+    if (index < 0 || game.score.frozen || playBlocked) return
     const values = [...game.values]
     values[index] = game.solution[index]
     flashCompletedGroups(index, game.values, values)
@@ -227,6 +232,7 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
 
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
+      if (playBlocked) return
       if (event.key >= '1' && event.key <= '9') enterNumber(Number(event.key))
       if (event.key === 'Backspace' || event.key === 'Delete') erase()
       if (event.key === 'ArrowLeft' && game.selectedIndex !== null) onChange({ ...game, selectedIndex: Math.max(0, game.selectedIndex - 1) })
@@ -306,7 +312,14 @@ export function GameScreen({ user, game, onChange, onNewGame, onComplete, onSwit
                 )
               })}
             </div>
-            {game.paused ? (
+            {playBlocked ? (
+              <div className="pause-cover anti-addiction-cover">
+                <h2>{playLimitStatus.kind === 'rest' ? '请休息一下' : '今日游戏时间已达上限'}</h2>
+                <p>{playLimitStatus.kind === 'rest' ? '已经连续玩了2小时，请休息30分钟后再继续。' : '24小时内累计游戏时间不能超过4小时，请稍后再玩。'}</p>
+                <span>剩余 {formatTime(playLimitStatus.remainingSeconds)}</span>
+              </div>
+            ) : null}
+            {game.paused && !playBlocked ? (
               <div className="pause-cover">
                 <h2>游戏已暂停</h2>
                 <button className="primary-button" onClick={() => onChange({ ...game, paused: false })}>继续游戏</button>

@@ -1,3 +1,4 @@
+import { createPlayLimitState, normalizePlayLimitState } from '../domain/playLimits'
 import type { AppData, UserProfile } from '../domain/types'
 
 const STORAGE_KEY = 'atube-sudoku-v1'
@@ -12,6 +13,7 @@ export function createEmptyData(): AppData {
     records: [],
     lastDifficulty: 'medium',
     lastBoardStyle: 'decorative',
+    playLimit: createPlayLimitState(Date.now()),
   }
 }
 
@@ -32,7 +34,7 @@ export function loadAppData(): AppData {
         ]
       }),
     )
-    return { ...parsed, games }
+    return { ...parsed, games, playLimit: normalizePlayLimitState(parsed.playLimit, Date.now()) }
   } catch {
     return createEmptyData()
   }

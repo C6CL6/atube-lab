@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SudokuApp } from './SudokuApp'
 import type { AppData, GameState, UserProfile } from './domain/types'
 import { createScoreState } from './domain/scoring'
+import { createPlayLimitState } from './domain/playLimits'
 
 const STORAGE_KEY = 'atube-sudoku-v1'
 
@@ -46,6 +47,7 @@ function saveAppDataWithGame() {
     games: { [user.id]: oneMoveGame() },
     records: [],
     lastDifficulty: 'easy',
+    playLimit: createPlayLimitState(Date.now()),
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
@@ -122,6 +124,7 @@ describe('数独应用记录成绩', () => {
       games: {},
       records: [],
       lastDifficulty: 'easy',
+      playLimit: createPlayLimitState(Date.now()),
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     const userAction = userEvent.setup()

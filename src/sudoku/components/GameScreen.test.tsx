@@ -279,3 +279,48 @@ describe('新手撤销机会', () => {
     expect(screen.getByRole('button', { name: '撤销一步' })).toBeDisabled()
   })
 })
+
+describe('网页版防沉迷提示', () => {
+  it('连续游戏满2小时后显示休息提示并阻止输入', async () => {
+    const onChange = vi.fn()
+    render(
+      <GameScreen
+        user={user}
+        game={interactiveGame()}
+        onChange={onChange}
+        onNewGame={vi.fn()}
+        onComplete={vi.fn()}
+        onSwitchUser={vi.fn()}
+        onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
+        playLimitStatus={{ kind: 'rest', remainingSeconds: 1800 }}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: '请休息一下' })).toBeInTheDocument()
+    expect(screen.getByText('已经连续玩了2小时，请休息30分钟后再继续。')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: '数字 9' }))
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('24小时累计满4小时后显示今日上限提示', () => {
+    render(
+      <GameScreen
+        user={user}
+        game={interactiveGame()}
+        onChange={vi.fn()}
+        onNewGame={vi.fn()}
+        onComplete={vi.fn()}
+        onSwitchUser={vi.fn()}
+        onShowRanking={vi.fn()}
+        onExitGame={vi.fn()}
+        onReturnHome={vi.fn()}
+        playLimitStatus={{ kind: 'daily-limit', remainingSeconds: 3600 }}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: '今日游戏时间已达上限' })).toBeInTheDocument()
+    expect(screen.getByText('24小时内累计游戏时间不能超过4小时，请稍后再玩。')).toBeInTheDocument()
+  })
+})

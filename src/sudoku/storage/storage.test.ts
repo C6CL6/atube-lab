@@ -71,4 +71,19 @@ describe('本机用户数据', () => {
 
     expect(loadAppData().games[userId].paused).toBe(true)
   })
+  it('旧本机数据会自动补齐防沉迷计时状态', () => {
+    localStorage.setItem('atube-sudoku-v1', JSON.stringify({
+      version: 1,
+      users: [],
+      activeUserId: null,
+      games: {},
+      records: [],
+      lastDifficulty: 'medium',
+    }))
+
+    const loaded = loadAppData()
+    expect(loaded.playLimit.dailySeconds).toBe(0)
+    expect(loaded.playLimit.continuousSeconds).toBe(0)
+  })
+
 })

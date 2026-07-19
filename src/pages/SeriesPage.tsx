@@ -14,7 +14,7 @@ const seriesInfo = {
   protagonist: {
     name: "主角" as const,
     author: "陈彦",
-    status: "持续更新",
+    status: "已完结",
     award: "第十届茅盾文学奖获奖小说",
     cover: coverUrl("protagonist-editorial.png"),
     summary: "从秦腔舞台与个人命运出发，观察一个普通人如何在时代、艺术与自我之间成为自己的主角。"
@@ -82,7 +82,7 @@ export function SeriesPage() {
         <section className="section page-shell">
           <header className="section-heading">
             <div><p className="eyeline">EPISODE DIRECTORY</p><h2>完整分集目录</h2></div>
-            <p>共 {episodes.length} 集，支持按集数搜索。</p>
+            <p>{info.name === "主角" ? `B站已完整发布 150 集，本站当前整理可播放目录 ${episodes.length} 集。` : `共 ${episodes.length} 集，支持按集数搜索。`}</p>
           </header>
           <EpisodeDirectory episodes={episodes} onPlay={setActiveWork} />
         </section>

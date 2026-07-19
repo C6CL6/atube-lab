@@ -2,10 +2,17 @@ import { ArrowLeft, ArrowRight, Download, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
-import { buildPersonalityReport, formatReportText } from "../personality/domain/report";
-import { mbtiQuestions } from "../personality/domain/questions";
-import { scoreMbtiAnswers } from "../personality/domain/scoring";
-import type { AnswerMap, AnswerValue, PersonalityReport, PersonalityUser } from "../personality/domain/types";
+import { buildDiscReport, buildPersonalityReport, formatReportText } from "../personality/domain/report";
+import { discQuestions, mbtiQuestions } from "../personality/domain/questions";
+import { scoreDiscAnswers, scoreMbtiAnswers } from "../personality/domain/scoring";
+import type {
+  AnswerMap,
+  AnswerValue,
+  DimensionScore,
+  PersonalityReport,
+  PersonalityTestType,
+  PersonalityUser,
+} from "../personality/domain/types";
 import { createPersonalityUser, loadPersonalityUsers, loadReports, saveReport } from "../personality/storage/storage";
 import "../personality/styles.css";
 
@@ -17,8 +24,24 @@ const answerOptions: { value: AnswerValue; label: string }[] = [
   { value: 2, label: "比较符合右侧" },
 ];
 
+const availableTests: {
+  type: PersonalityTestType;
+  title: string;
+  body: string;
+}[] = [
+  {
+    type: "sixteen-types",
+    title: "MBTI 人格倾向测试",
+    body: "60道中文题，覆盖能量来源、信息处理、决策方式、生活节奏四组维度。",
+  },
+  {
+    type: "disc",
+    title: "五型动物人格测验",
+    body: "48道中文题，观察目标推动、表达连接、稳定承接和谨慎校验等协作风格。",
+  },
+];
+
 const upcomingTests = [
-  ["DISC 个性测验", "偏企业管理和沟通风格，适合团队协作分析。"],
   ["九型人格测试", "偏动机、恐惧和角色深层驱动力，适合人物塑造。"],
   ["大五人格问卷", "偏学术维度，适合更稳定的特质量化观察。"],
 ];
@@ -35,27 +58,70 @@ function downloadFile(filename: string, content: string, type: string) {
 
 function DimensionBars({ report }: { report: PersonalityReport }) {
   return (
-    <div className="personality-bars" aria-label="四组维度比例">
+    <div className="personality-bars" aria-label={report.testType === "disc" ? "五型测验维度比例" : "四组维度比例"}>
       {Object.entries(report.scores).map(([dimension, score]) => {
-        const leftValue = score.percentages[score.left];
-        const rightValue = score.percentages[score.right];
+        if ("percent" in score) {
+          return (
+            <div className="personality-bar personality-bar--single" key={dimension}>
+              <div className="personality-bar__label">
+                <strong>{dimension}</strong>
+                <span>{discDimensionName(dimension)}</span>
+                <strong>{score.percent}%</strong>
+              </div>
+              <div className="personality-bar__track">
+                <span style={{ width: `${score.percent}%` }}>{score.percent}%</span>
+              </div>
+              <p>{score.note}</p>
+            </div>
+          );
+        }
+        const mbtiScore = score as DimensionScore;
+        const leftValue = mbtiScore.percentages[mbtiScore.left];
+        const rightValue = mbtiScore.percentages[mbtiScore.right];
         return (
           <div className="personality-bar" key={dimension}>
             <div className="personality-bar__label">
-              <strong>{score.left}</strong>
+              <strong>{mbtiScore.left}</strong>
               <span>{dimension}</span>
-              <strong>{score.right}</strong>
+              <strong>{mbtiScore.right}</strong>
             </div>
             <div className="personality-bar__track">
               <span style={{ width: `${leftValue}%` }}>{leftValue}%</span>
               <span style={{ width: `${rightValue}%` }}>{rightValue}%</span>
             </div>
-            <p>{score.note}</p>
+            <p>{mbtiScore.note}</p>
           </div>
         );
       })}
     </div>
   );
+}
+
+function discDimensionName(dimension: string) {
+  const names: Record<string, string> = {
+    D: "目标推动",
+    I: "表达连接",
+    S: "稳定承接",
+    C: "谨慎校验",
+  };
+  return names[dimension] ?? dimension;
+}
+
+function reportTitle(report: PersonalityReport) {
+  return report.testType === "disc" ? "五型动物人格测验报告" : "MBTI 人格倾向报告";
+}
+
+function heroTitle(started: boolean, activeReport: PersonalityReport | null, activeTestTitle: string) {
+  if (activeReport) return reportTitle(activeReport);
+  if (started) return activeTestTitle;
+  return "性格测验中心";
+}
+
+function heroDescription(started: boolean, activeReport: PersonalityReport | null, activeTest: PersonalityTestType) {
+  if (activeReport) return "报告基于本次本地答题生成，只用于自我观察、创作设定和沟通风格复盘。";
+  if (started && activeTest === "disc") return "按左右偏好取舍回答，不评价好坏，只观察你在不同协作场景里的自然入口。";
+  if (started) return "按左右偏好取舍回答，不评价好坏，只观察你在四组人格维度上的相对倾向。";
+  return "这里集中放置多套人格与沟通风格问卷。先选择用户，再选择要开始的测验。";
 }
 
 export function PersonalityPage() {
@@ -64,11 +130,14 @@ export function PersonalityPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [started, setStarted] = useState(false);
+  const [activeTest, setActiveTest] = useState<PersonalityTestType>("sixteen-types");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [activeReport, setActiveReport] = useState<PersonalityReport | null>(null);
   const history = loadReports(selectedUser?.id);
-  const currentQuestion = mbtiQuestions[currentIndex];
+  const activeQuestions = activeTest === "disc" ? discQuestions : mbtiQuestions;
+  const currentQuestion = activeQuestions[currentIndex];
+  const activeTestMeta = availableTests.find((test) => test.type === activeTest) ?? availableTests[0];
 
   const createUser = () => {
     try {
@@ -86,23 +155,27 @@ export function PersonalityPage() {
     if (!selectedUser) return;
     const nextAnswers = { ...answers, [currentQuestion.id]: value };
     setAnswers(nextAnswers);
-    if (currentIndex < mbtiQuestions.length - 1) {
+    if (currentIndex < activeQuestions.length - 1) {
       setCurrentIndex((index) => index + 1);
       return;
     }
-    const scores = scoreMbtiAnswers(mbtiQuestions, nextAnswers);
-    const report = buildPersonalityReport(selectedUser, scores, nextAnswers);
+    const report = activeTest === "disc"
+      ? buildDiscReport(selectedUser, scoreDiscAnswers(discQuestions, nextAnswers), nextAnswers)
+      : buildPersonalityReport(selectedUser, scoreMbtiAnswers(mbtiQuestions, nextAnswers), nextAnswers);
     saveReport(report);
     setActiveReport(report);
     setStarted(false);
   };
 
-  const resetTest = () => {
+  const startTest = (testType: PersonalityTestType) => {
     setAnswers({});
     setCurrentIndex(0);
     setActiveReport(null);
+    setActiveTest(testType);
     setStarted(true);
   };
+
+  const resetTest = () => startTest(activeReport?.testType ?? activeTest);
 
   return (
     <>
@@ -111,8 +184,8 @@ export function PersonalityPage() {
         <section className="personality-hero page-shell">
           <div>
             <p className="eyeline">PERSONALITY LAB</p>
-            <h1>16型人格倾向测试</h1>
-            <p>参考 MBTI 常见四维框架和经典问卷的测量方向设计，适合自我观察、人物创作和沟通风格复盘。</p>
+            <h1>{heroTitle(started, activeReport, activeTestMeta.title)}</h1>
+            <p>{heroDescription(started, activeReport, activeTest)}</p>
           </div>
         </section>
 
@@ -158,17 +231,19 @@ export function PersonalityPage() {
           <section className="personality-main">
             {!started && !activeReport ? (
               <>
-                <div className="personality-card personality-card--primary">
-                  <div>
-                    <p className="eyeline">AVAILABLE NOW</p>
-                    <h2>本次开放测试</h2>
-                    <p>
-                      60道中文题，覆盖能量来源、信息处理、决策方式、生活节奏四组维度。
-                    </p>
-                  </div>
-                  <button className="button button--primary" disabled={!selectedUser} onClick={() => setStarted(true)}>
-                    开始测试 <ArrowRight size={16} />
-                  </button>
+                <div className="personality-test-grid">
+                  {availableTests.map((test) => (
+                    <article className="personality-card personality-card--primary" key={test.type}>
+                      <div>
+                        <p className="eyeline">AVAILABLE NOW</p>
+                        <h2>{test.title}</h2>
+                        <p>{test.body}</p>
+                      </div>
+                      <button className="button button--primary" disabled={!selectedUser} onClick={() => startTest(test.type)}>
+                        开始 <ArrowRight size={16} />
+                      </button>
+                    </article>
+                  ))}
                 </div>
                 <div className="personality-upcoming">
                   {upcomingTests.map(([title, body]) => (
@@ -188,13 +263,15 @@ export function PersonalityPage() {
                 <button className="personality-back" onClick={() => setStarted(false)}>
                   <ArrowLeft size={16} /> 返回测试中心
                 </button>
-                <p className="eyeline">第 {currentIndex + 1} / {mbtiQuestions.length} 题</p>
+                <p className="eyeline">{activeTestMeta.title} · 第 {currentIndex + 1} / {activeQuestions.length} 题</p>
                 <h2>{currentQuestion.prompt}</h2>
                 <p className="personality-question-example">{currentQuestion.example}</p>
-                <div className="personality-scale-labels">
-                  <span>{currentQuestion.leftLabel}</span>
-                  <span>{currentQuestion.rightLabel}</span>
-                </div>
+                {"leftLabel" in currentQuestion ? (
+                  <div className="personality-scale-labels">
+                    <span>{currentQuestion.leftLabel}</span>
+                    <span>{currentQuestion.rightLabel}</span>
+                  </div>
+                ) : null}
                 <div className="personality-answer-grid">
                   {answerOptions.map((option) => (
                     <button key={option.value} onClick={() => answerQuestion(option.value)}>
@@ -203,7 +280,7 @@ export function PersonalityPage() {
                   ))}
                 </div>
                 <div className="personality-progress" aria-label="测试进度">
-                  <span style={{ width: `${((currentIndex + 1) / mbtiQuestions.length) * 100}%` }} />
+                  <span style={{ width: `${((currentIndex + 1) / activeQuestions.length) * 100}%` }} />
                 </div>
               </div>
             ) : null}
@@ -230,7 +307,7 @@ function HistoryList({ reports, onOpen }: { reports: PersonalityReport[]; onOpen
       <div>
         {reports.map((report) => (
           <button key={report.id} onClick={() => onOpen(report)}>
-            <strong>{report.typeCode}</strong>
+            <strong>{report.testType === "disc" ? "五型动物" : "MBTI"} · {report.typeCode}</strong>
             <span>{new Date(report.createdAt).toLocaleString("zh-CN")}</span>
           </button>
         ))}
@@ -246,7 +323,7 @@ function ReportView({ report, onRetest, onBack }: { report: PersonalityReport; o
         <ArrowLeft size={16} /> 返回测试中心
       </button>
       <p className="eyeline">LOCAL REPORT</p>
-      <h2>{report.username}的16型人格倾向报告</h2>
+      <h2>{report.username}的{reportTitle(report)}</h2>
       <div className="personality-type">
         <span>你的倾向类型</span>
         <strong>{report.typeCode}</strong>

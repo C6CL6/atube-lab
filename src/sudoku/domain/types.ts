@@ -1,3 +1,5 @@
+import type { PlayLimitState } from './playLimits'
+
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type BoardStyle = 'decorative' | 'minimal'
 
@@ -65,4 +67,5 @@ export type AppData = {
   records: GameRecord[]
   lastDifficulty: Difficulty
   lastBoardStyle?: BoardStyle
+  playLimit: PlayLimitState
 }
